@@ -1,0 +1,45 @@
+[Docker Server]
+IP  : 192.168.83.9
+User: etracs25_altavas
+Pass: b@nw@k0
+
+
+[DB Access]
+IP   : 192.168.83.9
+User : root
+Pass : P@ssw0rd#
+
+
+[Webmin]
+URL  : https://192.168.83.9:10000
+User : etracs25_altavas
+Pass : b@nw@k0
+
+
+[Portainer]
+URL  : http://192.168.83.9:9000
+User : admin
+Pass : p@ssw0rd
+
+
+[Samba]
+URL  : \\192.168.83.9
+User : etracs25_altavas
+Pass : p@ssw0rd
+
+
+[DockerHub Images]
+docker pull nginx:latest
+docker pull ramesesinc/mail-server:latest
+docker pull ramesesinc/notification-server:1.0
+docker pull ramesesinc/node-download-server:0.0.3
+docker pull ramesesinc/gdx-proxy-server:v002
+docker pull ramesesinc/gdx-client:1.03.01
+docker pull ramesesinc/etracs-web:2.5.01.01
+docker pull ramesesinc/queue-server:2.5.02.01
+docker pull ramesesinc/local-epayment-server:2.5.01.02.05
+docker pull ramesesinc/etracs-server-municipality:2.5.03.02.01
+
+
+[GitHub]
+git clone https://github.com/ramesesinc/lgu-aklan-altavas-deployments.git
