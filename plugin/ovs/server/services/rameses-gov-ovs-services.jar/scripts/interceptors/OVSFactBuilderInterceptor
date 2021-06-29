@@ -1,0 +1,35 @@
+import com.rameses.annotations.*;
+
+class OVSFactBuilderInterceptor {
+
+	@DataContext('ovs_violation_ticket')
+	def ovs_violation_ticket; 
+
+	@DataContext(value='sys_usergroup_member', adapter='admin')
+	def	sys_usergroup_member; 
+
+
+	@After(pattern="FactBuilderService.getFacts")
+	public void afterGetFacts( evt ) {
+		def arg0 = evt.args[0]; 
+		def params = arg0.params;
+		if ( params.collectiontype?.handler == 'ovs' ) {
+			def facts = evt.result.facts; 
+			def tickets = params.billitems.collect{ it.ticketid }.findAll{( it )}.unique(); 
+			tickets.each{
+				def oo = ovs_violation_ticket.find([ objid: it ]).first(); 
+				def apprehensionofficerid = oo?.apprehensionofficer?.objid;
+				if ( apprehensionofficerid ) {
+					def ugms = sys_usergroup_member.where(' user.objid = :userid ', [userid: apprehensionofficerid]).list(); 
+					def ugm = ugms.find{( it.usergroup?.objid == 'OVS.OFFICER' )}
+					if ( ugm?.org?.objid ) {
+						facts << new treasury.facts.VarString(
+							tag: 'apprehensionofficer_orgid', 
+							value: ugm.org.objid 
+						); 
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,43 @@
+import com.rameses.annotations.*;
+
+import treasury.facts.*;
+import com.rameses.rules.common.*;
+import treasury.utils.*;
+
+
+class MarketUtilityService {
+	
+	@Service("AssessmentRuleService")
+	def assmtSvc;
+
+	@ProxyMethod 
+	public def calculate( params ) {
+
+		def fb = new FactBuilder(); 
+		if ( params.usage == null ) params.usage = 0;
+
+		fb.facts << new UtilityRate( type: params.txntype, usage: params.usage ); 
+		if ( params.year ) {
+			fb.facts << new MonthEntry( year:params.year, month: params.month );
+		}
+
+		def m = [:];
+		def resultHandler = [
+			getFactKeyValue : { v-> 
+				if(v instanceof VarDate ) {
+					m.nextreadingdate = v.date;
+				}
+				else if( v instanceof UtilityRate ) {
+					m.amount = v.rate;
+				}
+			}	
+		] as ResultHandler;
+
+		assmtSvc.execute( "marketutility", [:], fb, resultHandler );
+		if( params.usage && (!m.amount || m.amount <=0 ))
+			throw new Exception("Utility rate not computed. Please check the rules");		
+
+		return m;
+	} 	
+
+}

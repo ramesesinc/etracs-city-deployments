@@ -1,0 +1,71 @@
+import com.rameses.annotations.*;
+import java.text.*;
+import com.rameses.functions.*;
+import com.rameses.util.*;
+import market.facts.*;
+import com.rameses.rules.common.*;
+
+public class MarketAccountPersistenceInterceptor {
+
+	@Service("SequenceService")
+	def seqSvc;
+
+	@Service("DateService")
+	def dateSvc;
+
+	@Service("OrgService")
+	def orgSvc;
+
+	@Env
+	def env;
+
+	@DataContext("market_account")
+	def macct_em;
+
+	@DataContext("market_rentalunit")
+	def mruEm;
+
+	def dformat = new java.text.SimpleDateFormat("yyyy-MM-dd");
+
+	/**********************************************************
+	* called by new application or by data capture.
+	* Market Account naming standard = M{LGUCODE,3}{YEAR,4}{MONTH,2}{SEQ,5}
+	***********************************************************/
+	@Before( pattern="PersistenceService.create", eval="#{args[0]._schemaname == 'market_account'}")
+	public void beforeCreate( evt ) {
+		def o = evt.args[0];
+		if(!o.acctno) {
+			def lgucode = orgSvc.getRoot()?.code;
+			if(!lgucode)
+				throw new Exception("LGU code is null. Please check OrgService.getRoot. Ensure there is a root org");
+			lgucode = lgucode.replace("-", "");	
+			def yr = dateSvc.getServerYear();
+			def mnth = dateSvc.getServerMonth();
+			def smon = ( mnth < 10 ) ? "0"+mnth : mnth+"";
+			def prefix = "M"+lgucode+yr+smon;
+			o.acctno = prefix+seqSvc.getNextFormattedSeriesA(prefix, 4);
+		}
+		o.dtcreated = dateSvc.getServerDate();
+		o.createdby = [objid:env.USERID, name: env.USERNAME];
+	}
+
+	@Before( pattern="PersistenceService.update", eval="#{args[0]._schemaname == 'market_account'}")
+	public void beforeUpdate( evt ) { 
+		def o = evt.args[0]; 
+		def mr = macct_em.find([ objid: o.objid ]).select('objid,unitid').first(); 
+		if ( !mr ) throw new Exception('market account does not exist');  
+		if(o.unit?.objid) {
+			mruEm.find([ objid: mr.unitid ]).update([ currentacctid: '{NULL}' ]); 
+		}
+	}
+
+	@After( pattern="PersistenceService.(create|update)", eval="#{args[0]._schemaname == 'market_account'}")
+	public void afterSave( evt ) {
+		def o = evt.args[0];
+		if(o.unit?.objid) {
+			mruEm.find( [objid: o.unit.objid ] ).update( [currentacctid: o.objid ] );
+		}
+	}
+
+
+}

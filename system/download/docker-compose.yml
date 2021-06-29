@@ -52,3 +52,7 @@ services:
       - ../../_custom/module-client:/apps/server/public/resources/downloads/modules/custom
 
       - ../../appserver/epayment/module-client:/apps/server/public/resources/downloads/modules/epayment
+
+      - ../../plugin/ctc/client:/apps/server/public/resources/downloads/modules/ctc
+      - ../../plugin/market/client:/apps/server/public/resources/downloads/modules/market
+      - ../../plugin/ovs/client:/apps/server/public/resources/downloads/modules/ovs
