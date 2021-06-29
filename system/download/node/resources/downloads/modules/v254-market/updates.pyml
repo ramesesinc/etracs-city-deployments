@@ -1,0 +1,6 @@
+app:
+
+   env:
+
+   modules:
+      - { order: 310, version: 1.04, file: "modules/v254-market/rameses-gov-etracs-market.jar" }

@@ -1,0 +1,8 @@
+app:
+
+   env:
+
+   modules:
+      - { order: 330, version: 1.01, file: "modules/v254-vehicle/rameses-gov-etracs-vehicle.jar" }
+      - { order: 331, version: 1.01, file: "modules/v254-vehicle/rameses-gov-etracs-vehicle-tricycle.jar" }
+      - { order: 332, version: 1.01, file: "modules/v254-vehicle/rameses-gov-etracs-vehicle-pedicab.jar" }

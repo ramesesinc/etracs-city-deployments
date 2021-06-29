@@ -1,31 +1,31 @@
 [Docker Server]
-IP  : localhost
-User: 
-Pass: 
+IP  : 192.168.2.3
+User: lguligao
+Pass: p@ssw0rd
 
 
 [DB Access]
-IP   : localhost
-User : root
-Pass : 1234
+IP   : 192.168.2.8
+User : sa
+Pass : Etracsligao1
 
 
 [Webmin]
-URL  : https://localhost:10000
-User : 
-Pass : 
+URL  : https://192.168.2.3:10000
+User : <Same in Docker Server>
+Pass : <Same in Docker Server>
 
 
 [Portainer]
-URL  : http://localhost:9000
+URL  : http://192.168.2.3:9000
 User : admin
 Pass : p@ssw0rd
 
 
 [Samba]
-URL  : \\localhost
-User : 
-Pass : 
+URL  : \\192.168.2.3
+User : lguligao
+Pass : p@ssw0rd
 
 
 [DockerHub Images]
@@ -42,4 +42,4 @@ docker pull ramesesinc/local-epayment-server:2.5.01.02.05
 
 
 [GitHub]
-git clone https://github.com/ramesesinc/etracs-city-deployments.git
+git clone -b albay-ligao https://github.com/ramesesinc/etracs-city-deployments.git

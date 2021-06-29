@@ -1,0 +1,6 @@
+app:
+
+   env:
+
+   modules:
+      - { order: 320, version: 1.01, file: "modules/v254-ovs/rameses-gov-ovs.jar" }

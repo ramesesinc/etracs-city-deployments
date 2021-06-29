@@ -1,0 +1,279 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+
+class ETRACS22To254BldgMigrationInterceptor 
+{
+	@ActiveDB('bldgrpu')	
+	def rpuEm 
+
+	@ActiveDB('etracs254rpt')
+	def em254
+
+	@ActiveDB(value='etracs22rpt', em='etracs22')
+	def em22
+
+	
+
+	@After(pattern="ETRACS22To254MigrationService.migrateFaas", eval="#{result.rpu.rputype == 'bldg'}")
+	public void migrateBldgRpu(evt){
+		def faas22 = evt.result 
+		doMigrateBldgRpu(faas22)
+		doMigrateBldgStructures(faas22.rpu)
+		doMigrateBldgStructuralTypes(faas22.rpu)
+		doMigrateAssessment(faas22.rpu)
+		doUpdateBldgRpuInfo(faas22.rpu)
+		em22.deleteLogById(faas22)
+		println 'Bldg FAAS ' + faas22.objid + ' successfully migrated.'
+	}
+
+	void doMigrateBldgRpu(faas22){
+		def rpu = faas22.rpu 
+		if (!existBldgRpu(rpu)){
+			def landfaas22 = em22.findLandFaasById(faas22)
+			
+			if (!landfaas22)
+			throw new Exception('Building Land FAAS does not exist.')
+
+			def faasnew = em254.findLandFaasById(landfaas22)
+
+			if (!faasnew) 
+			throw new Exception('Land RPU reference does not exist.')
+
+			def newrpu = [
+				objid 			: rpu.objid,
+				landrpuid 		: faasnew.rpuid,
+				houseno 		: rpu.info.houseno,
+				psic 			: rpu.info.psic,
+				permitno 		: rpu.info.permitno,
+				permitdate 		: rpu.info.permitdate,
+				permitissuedby 	: rpu.info.permitissuedby,
+				bldgtype 		: [objid:rpu.info.bldgtype.bldgtypeid],
+				bldgkindbucc  	: [objid:rpu.info.bldgkindbucc.bldgkindbuccid],
+				basevalue 		: rpu.info.firstfloorbasevalue,
+				dtcompleted 	: rpu.info.dtcompleted,
+				dtoccupied 		: rpu.info.dtoccupied,
+				floorcount 		: 0,
+				depreciation 	: rpu.info.depreciation,
+				depreciationvalue : rpu.info.depreciationvalue,
+				totaladjustment : rpu.info.totaladjustment,
+				additionalinfo  : rpu.info.additionalinfo,
+				bldgage 		: rpu.info.bldgage,
+				effectiveage 	: rpu.info.bldgage,
+				percentcompleted : 100,
+				bldgassesslevel : [objid:rpu.info.assesslevelid],
+				assesslevel 	: rpu.info.assesslevel,
+				condominium 	: toBoolean(rpu.info.condominium, false),
+				bldgclass 		: rpu.info.bldgclass,
+				predominant		: 0, 
+			]
+			rpuEm.create(newrpu)
+		}
+	}
+
+	boolean existBldgRpu(rpu){
+		return em254.findBldgRpuById(rpu) != null 
+	}
+
+	void doMigrateBldgStructures(rpu){
+		rpu.bldgstructures.each{
+			if (!existBldgStructure(it)){
+				def newstructure = [
+					objid 		: it.objid,
+					bldgrpuid 	: rpu.objid, 
+					floor 		: 1, 
+					structure   : [objid:it.structureid],
+					material    : null, 
+				]
+				if (it.materialid)
+					newstructure.material = [objid:it.materialid]
+				rpuEm.create(newstructure, 'structure')
+
+			}
+		}
+	}
+
+	boolean existBldgStructure(structure){
+		return em254.findBldgStructureById(structure) != null 
+	}
+
+	void doMigrateBldgStructuralTypes(rpu){
+		if (!existBldgStructuralType(rpu)){
+			def newst = [
+				objid 			: rpu.objid,
+				bldgrpuid 		: rpu.objid,
+				classification  : em254.findPropertyClassificationByCode([code:'R']),
+				bldgtype 		: [objid:rpu.info.bldgtype.bldgtypeid],
+				bldgkindbucc 	: [objid:rpu.info.bldgkindbucc.bldgkindbuccid],
+				floorcount 		: rpu.info.floorcount,
+				basefloorarea 	: rpu.info.totalarea,
+				totalfloorarea  : rpu.info.totalarea,
+				basevalue  		: rpu.info.firstfloorbasevalue,
+				unitvalue	    : rpu.info.firstfloorbasevalue,
+			]
+			rpuEm.create(newst, 'structuraltype')
+
+			doMigrateBldgUses(rpu, newst)
+		}
+	}
+
+	boolean existBldgStructuralType(rpu){
+		return em254.findBldgStructuralTypeById(rpu) != null
+	}
+
+
+	void doMigrateBldgUses(rpu, newst){
+		rpu.info.bldguses.each{bu->
+			if (!existBldgUse(bu)){
+				def newbu = [
+					objid 			: bu.objid,
+					bldgrpuid 		: rpu.objid,
+					structuraltype  : newst,
+					actualuse       : [objid:bu.actualuse.actualuseid],
+					basevalue 		: rpu.info.firstfloorbasevalue,
+					area 			: bu.area,
+					basemarketvalue : bu.basemarketvalue,
+					depreciationvalue 	: bu.depreciationvalue,
+					adjustment 			: bu.adjustment,
+					marketvalue 		: bu.marketvalue,
+					assesslevel 		: bu.assesslevel,
+					assessedvalue 		: bu.assessedvalue,
+				]
+
+				rpuEm.create(newbu, 'bldguse')
+
+				doMigrateFloors(rpu, bu)
+			}
+		}
+	}
+
+
+	boolean existBldgUse(bu){
+		return em254.findBldgUseById(bu) != null 
+	}
+
+	void doMigrateFloors(rpu, bu){
+		bu.floors.each{floor ->
+			if (!existFloor(floor)){
+				def newfloor = [
+					objid 		: floor.objid,
+					bldguseid 	: bu.objid,
+					bldgrpuid 	: rpu.objid,
+					floorno 	: floor.floorno,
+					area 		: floor.area,
+					storeyrate 	: floor.storeyrate,
+					basevalue 	: floor.basevalue,
+					unitvalue 	: floor.unitvalue,
+					basemarketvalue : floor.basemarketvalue,
+					adjustment 	: floor.adjustment,
+					marketvalue : floor.marketvalue,
+				]
+
+				rpuEm.create(newfloor, 'floor')
+
+				doMigrateAdditionalItems(rpu, floor)
+			}
+		}
+	}
+
+	boolean existFloor(floor){
+		return em254.findFloorById(floor) != null
+	}
+
+	void doMigrateAdditionalItems(rpu, floor){
+		floor.additionalitems.each{item ->
+			if (!existBldgAdditionalItem(item)){
+				def newitem = [
+					objid 			: item.objid,
+					bldgfloorid 	: floor.objid,
+					bldgrpuid 		: rpu.objid,
+					additionalitem  : [objid:item.addlitemid],
+					amount 			: item.amount,
+					expr			: item.expr,
+				]
+
+				rpuEm.create(newitem, 'additional')
+
+				doMigrateAdditionalParams(rpu, item)
+			}
+		}
+	}
+
+	boolean existBldgAdditionalItem(item){
+		return em254.findBldgAdditionalItemById(item) != null 
+	}
+
+
+	void doMigrateAdditionalParams(rpu, item){
+		item.params.each{param ->
+			def objid = item.objid + param.addlitemcode
+			if (!existBldgAdditionalItemParam([objid:objid])){
+
+				def rptparam = em254.findRptParameterById([objid:param.paramid])
+				
+				if (!rptparam)
+				throw new Exception('Parameter ' + param.paramname + ' does not exist.')
+
+				def newparam = [
+					objid 					: objid,
+					bldgflooradditionalid 	: item.objid,
+					bldgrpuid 				: rpu.objid,
+					param 					: [objid:param.paramid],
+					intvalue 				: (rptparam.paramtype.matches('.*integer.*') ? toInteger(param.paramvalue) : 0),
+					decimalvalue 			: (rptparam.paramtype.matches('.*decimal.*') ? toDecimal(param.paramvalue) : 0.0),
+				]
+
+				rpuEm.create(newparam, 'param')
+			}
+		}
+	}
+
+	boolean existBldgAdditionalItemParam(param){
+		return em254.findBldgAdditionalItemParamById(param) != null
+	}
+
+	void doUpdateBldgRpuInfo(rpu){
+		em254.updateBldgRpuFloorCount(rpu)
+		em254.updateStructuralTypeBaseArea(rpu)
+	}
+
+
+	def toInteger(paramvalue){
+		if (paramvalue == null) 
+			return 0
+
+		try{
+			return 
+			new java.math.BigDecimal(paramvalue.toString()).intValue()
+		}
+		catch(e){
+			return 0
+		}
+	}
+
+	def toDecimal(paramvalue){
+		if (paramvalue == null) 
+			return 0.0
+
+		try{
+			return new java.math.BigDecimal(paramvalue.toString())
+		}
+		catch(e){
+			return 0.0 
+		}
+	}
+
+	boolean toBoolean(val, defaultvalue ){
+		if (val == null)
+			return defaultvalue
+		if (val instanceof Boolean)
+			return val 
+		return val.toString().toLowerCase().matches('y|yes|t|true|1')
+	}
+
+	void doMigrateAssessment(rpu){
+		em254.insertBldgRpuAssessment(rpu)
+	}
+
+}

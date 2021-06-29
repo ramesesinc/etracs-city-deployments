@@ -1,0 +1,145 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import java.rmi.server.UID;
+import com.rameses.util.*;
+
+class ETRACS22To254MachMigrationInterceptor 
+{
+	@ActiveDB('machrpu')	
+	def rpuEm 
+
+	@ActiveDB('etracs254rpt')
+	def em254
+
+	@ActiveDB(value='etracs22rpt', em='etracs22')
+	def em22
+
+	
+
+	@After(pattern="ETRACS22To254MigrationService.migrateFaas", eval="#{result.rpu.rputype == 'mach'}")
+	public void migrateMachRpu(evt){
+		def faas22 = evt.result 
+		doMigrateMachRpu(faas22)
+		doMigrateMachUses(faas22.rpu)
+		doMigrateAssessment(faas22.rpu)
+		em22.deleteLogById(faas22)
+		println 'Machine FAAS ' + faas22.objid + ' successfully migrated.'
+	}
+
+	void doMigrateMachRpu(faas22){
+		def rpu = faas22.rpu 
+		if (!existMachRpu(rpu)){
+			def landfaas22 = em22.findLandFaasById(faas22)
+			
+			if (!landfaas22)
+			throw new Exception('Machine Land FAAS does not exist.')
+
+			def faasnew = em254.findLandFaasById(landfaas22)
+
+			if (!faasnew) 
+			throw new Exception('Land RPU reference does not exist.')
+
+			def newrpu = [
+				objid 			: rpu.objid,
+				landrpuid 		: faasnew.rpuid,
+			]
+			rpuEm.create(newrpu)
+		}
+	}
+
+	boolean existMachRpu(rpu){
+		return em254.findMachRpuById(rpu) != null 
+	}
+
+	void doMigrateMachUses(rpu){
+		rpu.machuses.each{
+			if (!existMachUse(it)){
+				def newmu = [
+					objid 			: it.objid,
+					machrpuid 		: rpu.objid,
+					basemarketvalue : it.basemarketvalue,
+					marketvalue 	: it.marketvalue,
+					assesslevel 	: it.assesslevel,
+					assessedvalue 	: it.assessedvalue,
+					actualuse 		: [objid:it.actualuseid],
+				]
+				rpuEm.create(newmu, 'machuse')
+				doMigrateMachDetails(rpu, it)
+			}
+		}
+	}
+
+	boolean existMachUse(mu){
+		return em254.findMachUseById(mu) != null 
+	}
+
+	void doMigrateMachDetails(rpu, mu){
+		mu.machdetails.each{md->
+			if (!existMachDetail(md)){
+				def newmd = [
+					objid 			: md.objid,
+					machuseid 		: mu.objid, 
+					machrpuid 		: rpu.objid, 
+					machine  		: [objid:md.machineid],
+					operationyear 	: md.operationyear,
+					replacementcost : md.replacementcost,
+					depreciation 	: md.depreciation,
+					depreciationvalue : md.depreciationvalue,
+					basemarketvalue : md.basemarketvalue,
+					marketvalue 	: md.marketvalue,
+					assesslevel 	: md.assesslevel,
+					assessedvalue 	: md.assessedvalue,
+					brand 			: md.brand,
+					capacity 		: md.capacity,
+					model 			: md.model,
+					serialno 		: md.serialno,
+					status 			: md.status,
+					yearacquired 	: md.yearacquired,
+					estimatedlife 	: md.estimatedlife,
+					remaininglife 	: md.remaininglife,
+					yearinstalled 	: md.yearinstalled,
+					yearsused 		: md.yearsused,
+					originalcost 	: md.originalcost,
+					freightcost 	: md.freightcost,
+					insurancecost 	: md.insurancecost,
+					installationcost : md.installationcost,
+					brokeragecost 	: md.brokeragecost,
+					arrastrecost 	: md.arrastrecost,
+					othercost 		: md.othercost,
+					acquisitioncost : md.acquisitioncost,
+					feracid 		: md.feracid,
+					ferac 			: md.ferac,
+					forexid 		: md.forexid,
+					forex 			: md.forex,
+					residualrate 	: md.residualrate,
+					conversionfactor : md.conversionfactor,
+					useswornamount 	: toBoolean(md.useswornamount, false),
+					swornamount 	: md.swornamount,
+					imported 		: toBoolean(md.imported, false),
+					newlyinstalled 	: toBoolean(md.newlyinstalled, false),
+					autodepreciate	: toBoolean(md.autodepreciate, true),
+				]
+				rpuEm.create(newmd, 'machdetail')
+			}
+		}
+	}
+
+	void doMigrateAssessment(rpu){
+		em254.insertMachRpuAssessment(rpu)
+	}
+
+
+	boolean existMachDetail(md){
+		return em254.findMachDetailById(md) != null 
+	}
+
+	boolean toBoolean(val, defaultvalue ){
+		if (val == null)
+			return defaultvalue
+		if (val instanceof Boolean)
+			return val 
+		return val.toString().toLowerCase().matches('y|yes|t|true|1')
+	}
+
+	
+}
