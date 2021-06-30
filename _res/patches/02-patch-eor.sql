@@ -16,10 +16,8 @@ alter table eor_share add receiptitemid varchar(50) null
 
 
 
-
-if object_id('dbo.vw_remittance_eor_item', 'V') IS NOT NULL 
-	drop view dbo.vw_remittance_eor_item; 
-go 
+drop view if exists vw_remittance_eor_item
+; 
 CREATE VIEW vw_remittance_eor_item AS 
 select 
 	c.remittanceid AS remittanceid,
@@ -40,12 +38,11 @@ select
 from eor_remittance r 
 	inner join eor c on c.remittanceid = r.objid 
 	inner join eor_item cri on cri.parentid = c.objid
-go 
+;
 
 
-if object_id('dbo.vw_remittance_eor_share', 'V') IS NOT NULL 
-	drop view dbo.vw_remittance_eor_share; 
-go 
+drop view if exists vw_remittance_eor_share
+; 
 CREATE VIEW vw_remittance_eor_share AS 
 select 
 	c.remittanceid AS remittanceid,
@@ -67,7 +64,7 @@ select
 from eor_remittance r 
 	inner join eor c on c.remittanceid = r.objid 
 	inner join eor_share cri on cri.parentid = c.objid
-go 
+;
 
 
 
