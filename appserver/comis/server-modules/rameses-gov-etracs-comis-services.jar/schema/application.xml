@@ -1,0 +1,51 @@
+<schema>
+    <element tablename="application">
+        <field name="objid" primary="true" prefix="APP" />
+        <!-- DRAFT, FORPAYMENT, FORRELEASE, ACTIVE, RENEWED, EXPIRED, CLOSED -->
+        <field name="state" required="true" caption="State" searchable="true" defaultValue="DRAFT" />
+        <field name="resourceinfo_objid" />
+        <field name="online" required="true" type="boolean" />
+        <!-- NEW, RENEWAL, TRANSFER -->
+        <field name="apptype" required="true" caption="App Type" indexed="true" defaultValue="NEW" />
+        <field name="appno" caption="App No." searchable="true" />
+        <field name="dtapplied" required="true" caption="App Date" />
+        <field name="dtapproved" caption="Date Approved" />
+        <field name="appyear" required="true" caption="App Year" />
+        <field name="applicant_objid" />
+        <field name="applicant_name" caption="Applicant" searchable="true" />
+        <field name="applicant_address" caption="Address" />
+        <field name="relation_objid" />
+        <field name="deceased_objid" />
+        <field name="dtexpiry" caption="Expiry Date" searchable="true" />
+        <field name="renewable" type="boolean" required="true" caption="Renewable?" indexed="true" defaultValue="false"/>
+        <field name="leaseduration" type="integer" caption="Lease Duration" defaultValue="0" />
+        <field name="amount" type="decimal" caption="Amount" required="true" />
+        <field name="amtpaid" type="decimal" caption="Amount Paid" required="true" />
+        <field name="balance" expr="amount - amtpaid" caption="Balance" />
+        <field name="permitid" />
+        <field name="reportid" />
+        <field name="balance" type="decimal" expr="amount - amtpaid" caption="Balance" />
+        <complex name="lessor" serializer="default" />
+        <complex name="lessee" serializer="default" />
+        <field name="witness1" />
+        <field name="witness2" />
+        <field name="prevappid" />
+        <field name="taskid" />
+        
+        <complex name="deceased" ref="deceased" jointype="many-to-one" required="false">
+            <key field="deceased_objid" target="objid" />
+        </complex>
+        <complex name="relation" ref="relation" jointype="many-to-one" required="false">
+            <key field="relation_objid" target="objid" />
+        </complex>
+        <complex name="resourceinfo" ref="vw_cemetery_resource" jointype="many-to-one" required="false">
+            <key field="resourceinfo_objid" target="objid" />
+        </complex>
+        <complex name="fees" ref="application_fee" jointype="one-to-many" required="false">
+            <key field="objid" target="parentid" />
+        </complex>
+        <complex name="payments" ref="payment" jointype="one-to-many" required="false">
+            <key field="objid" target="appid" />
+        </complex>
+    </element>
+</schema>

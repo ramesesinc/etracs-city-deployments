@@ -1,0 +1,31 @@
+import com.rameses.annotations.*
+import com.rameses.common.*;
+import com.rameses.services.extended.*
+
+class ComisReportTransferredRemainsInterceptor {
+	@Service('ComisUtil')
+	def util;
+
+	@ActiveDB('comis_transferred_remains')
+	def em;
+
+
+	@After(pattern="FormReportService.getData", eval="#{args[0].reportid == 'comis_list_transferred_remains'}", index=100)
+	public void getData(def evt) {
+		def params  = evt.args[0].parameters;
+
+		params.query = [period: 'ALL'];
+		params.filter = '';
+		util.buildStartEndDateFilter(params);
+		if (params.startdate) {
+			params.filter = ' AND dtapproved >= $P{startdate} AND dtapproved < $P{enddate}';
+		}
+		
+		def list = em.getList(params);
+		if (list) {
+			list[0].query = params.query;
+		}
+
+		evt.result.data = list;
+	}
+}

@@ -1,0 +1,30 @@
+import com.rameses.annotations.*
+import com.rameses.services.extended.*
+
+class ComisDeceasedPersonService {
+    @DataContext('causeofdeath')
+    def em_causeofdeath;
+    
+    @DataContext('nationality')
+    def em_nationality;
+
+    @DataContext('lgu')
+    def em_lgu;
+
+
+    @ProxyMethod
+    public def getNationalities() {
+        return em_nationality.where('1=1').list().objid;
+    }
+
+    @ProxyMethod
+    public def getCauseofdeaths() {
+        return em_causeofdeath.find([state: 'ACTIVE']).orderBy('title').list();
+    }
+
+    @ProxyMethod
+    public def getLgus() {
+        return em_lgu.where("1=1").orderBy("objid").list().objid;
+    }
+
+}

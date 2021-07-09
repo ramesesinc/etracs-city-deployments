@@ -1,0 +1,40 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class ComisApplicationExpiryTask 
+{
+	@Service('DateService')
+	def dtSvc 
+
+	@DataContext('application')
+	def em_app;
+
+	@Service("WorkflowTaskService")
+	def wfSvc;
+
+	@Schedule(interval=600)
+	public def updateExiredApplication(task) {
+		def dtexpiry = dtSvc.add(dtSvc.serverDate, '1d');
+		def list = em_app.select('objid,appno')
+							.where('state = :active AND dtexpiry < :dtexpiry', [active: 'ACTIVE', dtexpiry: dtexpiry])
+							.list();
+		list.each{
+			println 'Expired App: ' + it.appno;
+			em_app.find([objid: it.objid]).update([state: 'EXPIRED']);
+			signalWf(it, 'expired');
+		}
+	}	
+
+	void signalWf(app, action) {
+        def taskid = em_app.select('taskid').find([objid: app.objid]).val();
+        def wf = [:];
+        wf.taskid = taskid;
+        wf.processname = 'application';
+		wf.action = action;
+		wf.refid = app.objid;
+		wfSvc.signal(wf);
+    }
+
+}
+

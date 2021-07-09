@@ -1,0 +1,7 @@
+<schema>
+    <element tablename="relation">
+        <field name="objid" primary="true" caption="Code" visible="true" searchable="true" />
+        <field name="state" required="true" caption="State" searchable="true" defaultValue="DRAFT" />
+        <field name="title" caption="Relation" required="true" searchable="true" />
+    </element>
+</schema>

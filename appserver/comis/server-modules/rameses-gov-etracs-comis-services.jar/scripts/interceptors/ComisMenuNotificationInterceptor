@@ -1,0 +1,41 @@
+import com.rameses.annotations.*; 
+
+class ComisMenuNotificationInterceptor {
+	@Service("WorkflowTaskCountService")
+	def taskCountSvc;
+
+	@Service("UserRoleService")
+	def userRole;
+
+	@DataContext("vw_application")
+	def em_view_app;
+	
+	@DataContext("sys_wf")
+	def wfEm;
+
+	@Env
+	def env;
+
+	@After(pattern="MenuNotificationService.getCount", eval="#{ args[0].notificationid == 'comis' }")
+	public void getDomainCount( def evt ) {
+		def arg = evt.args[0];
+		def result = evt.result;
+
+		def cnt = 0;
+		def orgid = (env.ORGROOT == 1 ) ? "root" : env.ORGID;
+		def roleStr = userRole.getRolesString( [:] );
+		def g = wfEm.getTaskCount( [processname: "application", roles:roleStr, userid: env.USERID  ] );
+		if( g ) cnt += g.sum{ it.count };
+		result.count = cnt;
+	}	
+	
+	@After(pattern="MenuNotificationService.getCount", eval="#{ args[0].notificationid.startsWith('comis_application') }")
+	public void getApplicationCount( def evt ) {
+		def nid = evt.args[0].notificationid;
+		println 'nid => ' + nid;
+		def result = evt.result;
+		def cnt = taskCountSvc.getProcessTaskCount( [processname: "application", domain: "COMIS", notificationid: nid ] );
+		if(cnt) result.count = cnt.count;
+	}	
+
+}

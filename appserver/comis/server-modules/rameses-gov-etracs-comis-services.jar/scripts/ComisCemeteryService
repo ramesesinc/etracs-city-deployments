@@ -1,0 +1,96 @@
+import com.rameses.annotations.*
+import com.rameses.services.extended.*
+
+class ComisCemeteryService {
+    @DataContext('cemetery')
+    def em_cemetery;
+
+    @DataContext('cemetery_section')
+    def em_cem_section;
+
+    @DataContext('cemetery_block')
+    def em_cem_block;
+
+    @DataContext('cemetery_resource')
+    def em_cem_resource;
+
+    @DataContext('cemetery_resource_info')
+    def em_cem_resourceinfo;
+
+    @DataContext('vw_cemetery_resource')
+    def vw_cem_resource;
+
+
+    def DRAFT_STATE = 'DRAFT';
+    def ACTIVE_STATE = 'ACTIVE';
+    def INACTIVE_STATE = 'INACTIVE';
+
+    @ProxyMethod
+    public def approve(cemetery) {
+        def old = em_cemetery.read(cemetery);
+        if (!old) 
+        throw new Exception('Cemetery does not exist or has already been deleted');
+
+        if (INACTIVE_STATE.equalsIgnoreCase(old.state)) 
+        throw new Exception('Cemetery has already been deactivated');
+        
+        if (DRAFT_STATE.equalsIgnoreCase(old.state)) {
+            cemetery.state = ACTIVE_STATE;
+            em_cemetery.update(cemetery);
+            em_cem_section.find([parentid: cemetery.objid]).list().each {section ->
+                em_cem_block.find([parentid: section.objid]).list().each {block ->
+                    em_cem_resource.find([parentid: block.objid]).list().each{resource ->
+                        em_cem_resourceinfo.find([objid: resource.currentinfoid]).update([state: ACTIVE_STATE])
+                    }
+                }
+            }
+        }
+        return cemetery;
+    }
+    
+	@ProxyMethod
+    public def deactivate(cemetery) {
+        def old = em_cemetery.read(cemetery);
+        if (!old) 
+        throw new Exception('Cemetery does not exist or has already been deleted');
+
+        cemetery.state = INACTIVE_STATE;
+        em_cemetery.update(cemetery);
+        em_cem_section.find([parentid: cemetery.objid]).list().each {section ->
+            em_cem_block.find([parentid: section.objid]).list().each {block ->
+                em_cem_resource.find([parentid: block.objid]).list().each{resource ->
+                    em_cem_resourceinfo.find([objid: resource.currentinfoid]).update([state: INACTIVE_STATE])
+                }
+            }
+        }
+        return cemetery;
+    }
+
+	@ProxyMethod
+    public def approveResource(resource) {
+        def old = vw_cem_resource.find([objid: resource.objid]).first();
+        if (!old) 
+        throw new Exception('Resource does not exist or has already been deleted');
+
+        if (INACTIVE_STATE.equalsIgnoreCase(old.state)) 
+        throw new Exception('Resource has already been deactivated');
+        
+        if (DRAFT_STATE.equalsIgnoreCase(old.state)) {
+            resource.state = ACTIVE_STATE;
+            em_cem_resourceinfo.find([objid: resource.currentinfoid]).update([state: resource.state])
+        }
+        return resource;
+    }
+    
+	@ProxyMethod
+    public def deactivateResource(resource) {
+        def old = vw_cem_resource.find([objid: resource.objid]).first();
+        if (!old) 
+        throw new Exception('Resource does not exist or has already been deleted');
+
+        resource.state = INACTIVE_STATE;
+        em_cem_resourceinfo.find([objid: resource.currentinfoid]).update([state: resource.state])
+        return resource;
+    }
+
+}

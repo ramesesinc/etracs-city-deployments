@@ -1,0 +1,33 @@
+import com.rameses.annotations.*
+import com.rameses.common.*;
+import com.rameses.services.extended.*
+
+class ComisReportUnallocatedResourcesListInterceptor {
+	@Service('DateService')
+	def dtSvc;
+
+	@DataContext('vw_cemetery_resource')
+	def vw_app;
+
+	@After(pattern="FormReportService.getData", eval="#{args[0].reportid == 'comis_unallocated_resources'}", index=100)
+	public void getData(def evt) {
+		def params  = evt.args[0].parameters;
+		
+		def findby = [:];
+		def query = [section:'ALL', block: 'ALL'];
+		def where = ['appno IS NULL'];
+		findby.cemetery_objid = params.cemetery.objid;
+		if (params.section) {
+			findby.section_objid =  params.section.objid;
+			query.section = params.section.name;
+		}
+		if (params.block) {
+			findby.block_objid =  params.block.objid;
+			query.block = params.block.name;
+		}
+		evt.result.data = vw_app.find(findby).where(where).orderBy('section_code, block_code, code').list();
+		if (evt.result.data) {
+			evt.result.data[0].query = query;
+		}
+	}
+}

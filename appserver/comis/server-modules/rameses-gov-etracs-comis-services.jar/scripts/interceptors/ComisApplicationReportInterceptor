@@ -1,0 +1,155 @@
+import com.rameses.annotations.*
+import com.rameses.common.*;
+import com.rameses.services.extended.*
+
+class ComisApplicationReportInterceptor {
+	@Service('DateService')
+	def dtSvc;
+
+	@Service('NumberService')
+	def numSvc;
+
+	@DataContext('application')
+	def em_app;
+
+	@DataContext('cemetery')
+	def em_cemetery;
+
+	@DataContext('permit')
+	def em_permit;
+
+	@DataContext('payment')
+	def em_payment;
+	
+	
+	@After(pattern="FormReportService.getData", eval="#{args[0].reportid == 'comis_application'}", index=100)
+	public void getApplicationData(def evt) {
+		def appid  = evt.args[0].parameters.objid;
+		def app = em_app.read([objid: appid]);
+		if (!app) throw new Exception('Application does not exist or has already been deleted.')
+
+		def resource = app.resourceinfo.parent;
+		def block = resource.parent;
+		def section = block.parent;
+		def cemetery = section.parent;
+		cemetery.isnew = cemetery.isnew == 1
+
+		def data = [:]
+		app.applicant.address = app.applicant.address.replaceAll("\n","");
+		app.isoldniche = app.resourceinfo.resource.objid == 'NICHE' && !cemetery.isnew;
+		app.isnewniche = app.resourceinfo.resource.objid == 'NICHE' && cemetery.isnew;
+		app.istomb = app.resourceinfo.resource.objid == 'TOMB';
+		app.ismausoleum = app.resourceinfo.resource.objid == 'MAUSOLEUM';
+		app.isossuary = app.resourceinfo.resource.objid == 'OSSUARY';
+		data.resourceinfo = getResourceInfo(app);
+		data.cemetery = cemetery;
+		data.putAll(app);
+		evt.result.data = data;
+	}
+	
+	@After(pattern="FormReportService.getData", eval="#{args[0].reportid == 'comis_contract_niche'}", index=100)
+	public void getContractNicheData(def evt) {
+		def appid  = evt.args[0].parameters.objid;
+		def app = em_app.read([objid: appid]);
+		if (!app) throw new Exception('Application does not exist or has already been deleted.')
+
+		def resource = app.resourceinfo.parent;
+		def block = resource.parent;
+		def section = block.parent;
+		def cemetery = section.parent;
+		cemetery.isnew = cemetery.isnew == 1
+
+		def data = [:]
+		app.deceased.dtdied = dtSvc.format('MMMMM dd, yyyy', app.deceased.dtdied);
+		data.resourceinfo = getResourceInfo(app);
+		data.leaseperiod = numSvc.convertInt(app.leaseduration) + ' (' + app.leaseduration + ') ';
+		data.leaseperiod += app.leaseduration == 1 ? 'year' : 'years';
+		data.datesigned = formalizeDate(app.dtapplied, "d") + " day of " + dtSvc.format('MMMMM, yyyy', app.dtapplied);
+		data.cemetery = cemetery;
+		data.putAll(app);
+
+		evt.result.data = [app1: data, app2: data];
+	}
+
+	@After(pattern="FormReportService.getData", eval="#{args[0].reportid == 'comis_contract_tomb'}", index=100)
+	public void getContractTombData(def evt) {
+		def appid  = evt.args[0].parameters.objid;
+		def app = em_app.read([objid: appid]);
+		if (!app) throw new Exception('Application does not exist or has already been deleted.')
+
+		def resource = app.resourceinfo.parent;
+		def block = resource.parent;
+		def section = block.parent;
+		def cemetery = section.parent;
+		cemetery.isnew = cemetery.isnew == 1
+
+		def data = [:]
+		app.deceased.dtdied = dtSvc.format('MMMMM dd, yyyy', app.deceased.dtdied);
+		data.resourceinfo = getResourceInfo(app);
+		data.leaseperiod = numSvc.convertInt(app.leaseduration) + ' (' + app.leaseduration + ') ';
+		data.leaseperiod += app.leaseduration == 1 ? 'year' : 'years';
+		data.datesigned = formalizeDate(app.dtapplied, "d") + " day of " + dtSvc.format('MMMMM, yyyy', app.dtapplied);
+		app.expirydate = dtSvc.format('MMMMM dd, yyyy', app.dtexpiry);
+		data.cemetery = cemetery;
+		data.putAll(app);
+
+		evt.result.data = [app1: data, app2: data];
+	}
+
+	@After(pattern="FormReportService.getData", eval="#{args[0].reportid == 'comis_burial_permit'}", index=100)
+	public void getBurialPermitData(def evt) {
+		def appid  = evt.args[0].parameters.objid;
+		def app = em_app.read([objid: appid]);
+		if (!app) throw new Exception('Application does not exist or has already been deleted.')
+
+		def resource = app.resourceinfo.parent;
+		def block = resource.parent;
+		def section = block.parent;
+		def cemetery = section.parent;
+		cemetery.isnew = cemetery.isnew == 1
+
+		def data = [:]
+		def permit = em_permit.read([objid: app.permitid]);
+		app.deceased.dtdied = dtSvc.format('MMMMM dd, yyyy', app.deceased.dtdied);
+		data.resourceinfo = getResourceInfo(app);
+		data.putAll(app);
+		data.putAll(permit);
+		data.cemetery = cemetery;
+		data.issuedate = formalizeDate(permit.permitdate, "d") + " day of " + dtSvc.format('MMMMM, yyyy', permit.permitdate);
+		data.payment = em_payment.select('ref.*,amount').find([appid: app.objid]).where('voided = 0').first();
+
+		evt.result.data = data;
+	}
+
+	def getResourceInfo(app) {
+		def resource = app.resourceinfo.parent;
+		def block = resource.parent;
+		def section = block.parent;
+		def cemetery = section.parent;
+		cemetery.isnew = cemetery.isnew == 1
+
+		def resourceinfo = app.remove('resourceinfo');
+		resourceinfo.measure = resourceinfo.width + "x" + resourceinfo.length;
+		resourceinfo.type = resourceinfo.resource.name;
+		resourceinfo.title = resourceinfo.name + ' (Sec. ' + section.code + ', Blk. ' + block.code + ')';
+		return resourceinfo;
+	}
+
+	
+    def formalizeDate( date,  format ){
+        def dt = new java.text.SimpleDateFormat( format ).format(dtSvc.parse('yyyy-MM-dd', date)).toString();
+        
+        if( 'd'.equals(format) || 'dd'.equals(format)){
+            if( dt.matches('01|1|21|31') )
+                return dt + 'st';
+            else if( dt.matches('02|2|22') )
+                return dt + 'nd';
+            else if(dt.matches('03|3|23')) 
+                return dt + 'rd';
+            else return dt + 'th';
+        }
+        return dt;
+    } 
+
+	
+}

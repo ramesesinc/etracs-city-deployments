@@ -1,0 +1,16 @@
+<schema>
+    <element tablename="payment">
+        <field name="objid" primary="true" prefix="PMT" />
+        <field name="appid" required="true" />
+        <field name="refid" />
+        <field name="refno" required="true" caption="Ref No." />
+        <field name="reftype" required="true" caption="Ref Type" />
+        <field name="refdate" required="true" caption="Ref Date" />
+        <field name="discount" type="decimal" required="true" caption="Discount" />
+        <field name="amount" type="decimal" required="true" caption="Amount" />
+        <field name="voided" required="true" caption="Voided?" />
+        <field name="txnmode" required="true" caption="Mode" />
+        <field name="remarks" caption="Remarks" />
+        <field name="txndate" required="true" caption="Txn Date" />
+    </element>
+</schema>
