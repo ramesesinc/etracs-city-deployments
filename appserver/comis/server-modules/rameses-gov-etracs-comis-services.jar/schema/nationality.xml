@@ -1,0 +1,5 @@
+<schema>
+    <element tablename="nationality">
+        <field name="objid" primary="true" prefix="N" />
+    </element>
+</schema>

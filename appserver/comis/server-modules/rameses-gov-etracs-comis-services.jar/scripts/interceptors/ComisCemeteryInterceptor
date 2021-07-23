@@ -1,0 +1,102 @@
+import com.rameses.annotations.*;
+import com.rameses.common.*;
+import com.rameses.services.extended.*;
+
+class ComisCemeteryInterceptor {
+	@DataContext('resource')
+	def em_resource;
+
+	@DataContext('cemetery_section')
+	def em_section;
+
+	@DataContext('cemetery_block')
+	def em_cemetery_block;
+
+	@DataContext('cemetery_resource')
+	def em_cemetery_resource;
+
+	@DataContext('cemetery_resource_info')
+	def em_cemetery_resource_info;
+
+	@Before(pattern="PersistenceService.removeEntity", eval="#{ args[0]._schemaname == 'cemetery' }")
+	public void beforeDeleteCemetery(def evt) {
+		def cemetery = evt.args[0];
+		def sections = em_section.find([parentid: cemetery.objid]).list();
+		sections.each{section ->
+			deleteSection(section);
+		}
+	}	
+
+	@After(pattern="PersistenceService.create", eval="#{ args[0]._schemaname == 'cemetery_resource' }")
+	public void afterCreateResource(def evt) {
+		def resource = evt.result;
+		def info = [:]
+		info.putAll(resource);
+		info.parentid = resource.objid;
+		info.state = 'DRAFT';
+		info = em_cemetery_resource_info.create(info);
+		em_cemetery_resource.find([objid: resource.objid]).update([currentinfoid: info.objid]);
+		resource.currentinfoid = info.objid;
+	}	
+
+	@After(pattern="PersistenceService.update", eval="#{ args[0]._schemaname == 'cemetery_resource' }")
+	public void afterUpdateResource(def evt) {
+		def resource = evt.result;
+		def info = [:]
+		info.putAll(resource);
+		info.objid = resource.currentinfoid;
+		info.parentid = resource.objid;
+		info._schemaname = 'cemetery_resource_info';
+		info = em_cemetery_resource_info.update(info);
+	}	
+
+	@After(pattern="PersistenceService.read", eval="#{ args[0]._schemaname == 'cemetery_resource' }")
+	public void afterOpenResource(def evt) {
+		def entity = evt.result;
+		def info = em_cemetery_resource_info.find([objid: entity.currentinfoid]).first();
+		entity.resource = em_resource.find([objid: info.resource.objid]).first();
+		entity.length = info.length;
+		entity.width = info.width;
+	}	
+
+	@Before(pattern="PersistenceService.removeEntity", eval="#{ args[0]._schemaname == 'cemetery_section' }")
+	public void beforeDeleteSection(def evt) {
+		def section = evt.args[0];
+		deleteSection(section);
+	}	
+
+	@Before(pattern="PersistenceService.removeEntity", eval="#{ args[0]._schemaname == 'cemetery_block' }")
+	public void beforeDeleteBlock(def evt) {
+		def block = evt.args[0];
+		em_cemetery_resource.find([parentid: block.objid]).list().each {
+			deleteCemeteryResource(it);
+		}
+	}	
+
+	@Before(pattern="PersistenceService.removeEntity", eval="#{ args[0]._schemaname == 'cemetery_resource' }")
+	public void beforeDeleteResource(def evt) {
+		def resource = evt.args[0];
+		deleteCemeteryResource(resource);
+	}	
+
+
+	void deleteSection(section) {
+		em_cemetery_block.find([parentid: section.objid]).list().each {
+			deleteBlock(it);
+		}
+		em_section.find([objid: section.objid]).delete();
+	}
+
+	void deleteBlock(block) {
+		em_cemetery_resource.find([parentid: block.objid]).list().each {
+			deleteCemeteryResource(it)
+		}
+		em_cemetery_block.find([objid: block.objid]).delete();
+	}
+
+	void deleteCemeteryResource(resource) {
+		em_cemetery_resource.find([objid: resource.objid]).update([currentinfoid: null]);
+		em_cemetery_resource_info.find([parentid: resource.objid]).delete();
+		em_cemetery_resource.find([objid: resource.objid]).delete();
+	}
+}

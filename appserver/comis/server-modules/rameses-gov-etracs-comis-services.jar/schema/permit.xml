@@ -1,0 +1,10 @@
+<schema>
+    <element tablename="permit">
+        <field name="objid" primary="true" prefix="P" />
+        <field name="appid" required="true" />
+        <field name="paymentid" required="true" />
+        <field name="permitno" required="true" caption="Permit No." searchable="true" />
+        <field name="permitdate" required="true"  caption="Permit Date" />
+        <field name="permittype" required="true"  caption="Permit Type" />        
+    </element>
+</schema>

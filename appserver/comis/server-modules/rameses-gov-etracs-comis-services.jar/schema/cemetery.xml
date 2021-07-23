@@ -1,0 +1,10 @@
+<schema>
+    <element tablename="cemetery">
+        <field name="objid" primary="true" prefix="C"/>
+        <field name="state" required="true" caption="State" searchable="true" defaultValue="DRAFT" />
+        <field name="code" required="true" caption="Code" searchable="true" />
+        <field name="name" required="true" caption="Cemetery" searchable="true" />
+        <field name="location" required="true" caption="Location" />
+        <field name="isnew" required="true" type="boolean" caption="Is New?" />
+    </element>
+</schema>

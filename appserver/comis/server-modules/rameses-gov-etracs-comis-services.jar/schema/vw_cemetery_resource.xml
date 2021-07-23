@@ -1,0 +1,36 @@
+<schema>
+    <element tablename="vw_cemetery_resource">
+        <field name="objid" primary="true" />
+        <field name="parentid" />
+        <field name="code" caption="Code" searchable="true" />
+        <field name="name" caption="Name" searchable="true" />
+        <field name="currentinfoid" />
+        <field name="currentappid" />
+        <field name="areasqm" caption="Area (sqm)" />
+        <!-- DRAFT, ACTIVE, INACTIVE -->
+        <field name="state" caption="State" searchable="true" />
+        <field name="resource_objid" />
+        <field name="resource_name" caption="Type" searchable="true" />
+        <field name="section_objid" />
+        <field name="section_code" caption="Section Code" searchable="true" />
+        <field name="section_name" caption="Section" searchable="true" />
+        <field name="block_objid" />
+        <field name="block_code" caption="Block Code" searchable="true" />
+        <field name="block_name" caption="Block" searchable="true" />
+        <field name="ui" />
+        <field name="appno" caption="App No." searchable="true" />
+        <field name="apptype" caption="App Type" />
+        <field name="applicant_name" caption="Applicant" searchable="true" />
+        <field name="applicant_address" caption="Address" />
+        <field name="deceased_name" caption="Deceased Name" searchable="true" />
+        <field name="deceased_nationality" caption="Nationality" />
+        <field name="deceased_sex" caption="Sex" />
+        <field name="deceased_age" caption="Age" />
+        <field name="deceased_causeofdeath" caption="Cause of Death" />
+        <field name="cemetery_objid" />
+        <field name="cemetery_code" caption="Cemetery Code"  />
+        <field name="cemetery_name" caption="Cemetery" searchable="true"  />
+        <field name="cemetery_location" caption="Location" />
+        <field name="cemetery_isnew" caption="New?"/>
+    </element>
+</schema>

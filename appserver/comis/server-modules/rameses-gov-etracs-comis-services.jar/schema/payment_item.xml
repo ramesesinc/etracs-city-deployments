@@ -1,0 +1,20 @@
+<schema>
+    <element tablename="payment_item">
+        <field name="objid" primary="true" prefix="PI" />
+        <field name="parentid" required="true" />
+        <!-- links to application_fee, etc -->
+        <field name="refid" required="true" />
+        <!-- application_fee, etc -->
+        <field name="reftype" required="true" />
+        <field name="acct_objid" required="true" />
+        <!-- FEE, SURCHARGE, PENALTY -->
+        <field name="acct_type" required="true" />
+        <field name="amount" required="true" />
+        <field name="discount" required="true" />
+        <field name="remarks" />
+
+        <complex name="acct" ref="comis_itemaccount" jointype="many-to-one" >
+            <key field="acct_objid" target="objid" />
+        </complex>
+    </element>
+</schema>

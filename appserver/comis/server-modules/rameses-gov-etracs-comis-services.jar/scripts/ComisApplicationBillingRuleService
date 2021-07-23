@@ -1,0 +1,94 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import com.rameses.rules.common.*;
+import java.rmi.server.*;
+import comis.facts.*;
+import comis.actions.*;
+
+public class ComisApplicationBillingRuleService  {
+	@DataContext('application')
+	def em_app;
+
+	@Service("DateService")
+	def dtSvc;
+
+	@Service("RuleExecutorService")
+	def ruleSvc;
+
+	@DataContext('vw_cemetery_resource')
+	def em_view_resource;
+
+	@DataContext('comis_itemaccount')
+	def em_itemaccount;
+
+	@ProxyMethod
+	public def getBilling(app) {
+		app = em_app.read(app);
+		if (!app) throw new Exception('Application does not exist or has already been deleted.');
+		app = execute(app);
+		def bill = [:];
+		bill.billdate = dtSvc.serverDate;
+		bill.amount = app.amount;
+		bill.items = app.fees;
+		return bill;
+	}
+
+	@ProxyMethod
+	public def execute( app ) {
+		def request = buildRequest(app);
+		def res = ruleSvc.execute( "burialpermitapplicationbilling", request.facts, request.actions, null );
+		
+		def fees = request.facts.findAll{it instanceof comis.facts.Fee};
+		app.fees.each{fee ->
+			def updatedfee = fees.find{it.objid == fee.objid};
+			if (updatedfee) {
+				if (updatedfee.surcharge > 0) {
+					fee.surcharge = updatedfee.surcharge;
+					fee.surchargeacct = em_itemaccount.read([objid: updatedfee.surchargeacctid]);
+				}
+				if (updatedfee.penalty > 0) {
+					fee.penalty = updatedfee.penalty;
+					fee.penaltyacct = em_itemaccount.read([objid: updatedfee.penaltyacctid]);
+				}
+			}
+			fee.total = fee.amount + fee.surcharge + fee.penalty;
+		}
+		app.amount = 0;
+		app.amtpaid = 0;
+		if (app.fees) {
+			app.amount = app.fees.amount.sum();
+			app.amount += app.fees.surcharge.sum();
+			app.amount += app.fees.penalty.sum();
+		}
+		return app;
+	}
+
+	def buildRequest(app){
+		def vwresource = em_view_resource.find([objid: app.resourceinfo.objid]).first();
+		def request = [:]
+
+		request.facts = [];
+		request.facts << new CemeteryResource(vwresource);
+		request.facts << new Cemetery(vwresource.cemetery);
+		request.facts << new BurialPermitApplication(app);
+		
+		def prevapp  = em_app.read([objid: app.prevappid]);
+		if (prevapp) {
+			request.facts << new PrevBurialPermitApplication(prevapp);
+		}
+
+		app.fees.each{fee ->
+			request.facts << new Fee(fee);
+		}
+		request.actions = buildActions(request);
+		return request
+	}
+
+	def buildActions(request) {
+		def actions = new RuleAction();
+		actions.addCommand('calc-surcharge', new CalcSurcharge(request: request));
+		actions.addCommand('calc-penalty', new CalcPenalty(request: request));
+		return actions;
+	}
+
+}

@@ -1,0 +1,28 @@
+import com.rameses.annotations.*
+import com.rameses.common.*;
+import com.rameses.services.extended.*
+
+class ComisReportExpiredContractsListInterceptor {
+	@Service('DateService')
+	def dtSvc;
+
+	@DataContext('vw_application')
+	def vw_app;
+
+	@After(pattern="FormReportService.getData", eval="#{args[0].reportid == 'comis_expired_lease_contracts'}", index=100)
+	public void getData(def evt) {
+		def params  = evt.args[0].parameters;
+		
+		def findby = [:];
+		findby.state = 'EXPIRED';
+		findby.cemetery_objid = params.cemetery.objid;
+		if (params.section) {
+			findby.section_objid =  params.section.objid;
+		}
+		if (params.block) {
+			findby.block_objid =  params.block.objid;
+		}
+		
+		evt.result.data = vw_app.find(findby).orderBy('appno').list();
+	}
+}

@@ -1,0 +1,8 @@
+package burialpermitapplicationbilling;
+
+import comis.facts.*;
+import comis.actions.*;
+import com.rameses.rules.common.*;
+import java.util.*;
+
+global RuleAction action;

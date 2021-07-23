@@ -1,0 +1,12 @@
+<schema>
+    <element tablename="itemaccount">
+        <field name="objid" primary="true" caption="Code" visible="true" searchable="true" />
+        <field name="title" required="true" caption="Title" searchable="true" />
+        <field name="item_objid" />
+        <field name="item_code" caption="Mapped Code" searchable="true" />
+        <field name="item_title" caption="Mapped Title" searchable="true" />
+        <field name="item_fund_objid" />
+        <field name="item_fund_title" caption="Mapped Fund" searchable="true" />
+        <field name="sortorder" type="integer" caption="Order" />
+    </element>
+</schema>

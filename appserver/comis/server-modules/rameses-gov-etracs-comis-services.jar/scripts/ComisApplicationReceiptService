@@ -1,0 +1,106 @@
+import com.rameses.annotations.*;
+import com.rameses.services.extended.*;
+
+public class ComisApplicationReceiptService  {
+    @Service('DateService')
+    def dtSvc;
+
+    @Service('ComisApplicationBillingRuleService')
+    def billSvc;
+
+    @DataContext('application')
+    def em_app;
+
+    @DataContext('application_fee')
+    def em_app_fee;
+
+    @DataContext('payment')
+    def em_payment;
+
+    @DataContext('payment_item')
+    def em_payment_item;
+
+    @Service("WorkflowTaskService")
+	def wfSvc;
+
+    
+    @ProxyMethod
+    public def open(receipt) {
+        receipt.application = [:];
+        def pmt = em_payment.select('appid').find([refid: receipt.objid]).first();
+        if (pmt) {
+            receipt.application = em_app.find([objid: pmt.appid]).first();
+        }
+    }
+
+    @ProxyMethod
+    public def postPayment(receipt) {
+        def app = receipt.application;
+
+        em_app.find([objid: app.objid]).update([state: 'FORRELEASE', amount: receipt.amount, amtpaid: receipt.amount]);
+        
+        def pmt = [:]
+        pmt.appid = app.objid;
+        pmt.refid = receipt.objid;
+        pmt.refno = receipt.receiptno;
+        pmt.reftype = 'RECEIPT';
+        pmt.refdate = receipt.receiptdate;
+        pmt.discount = 0.0;
+        pmt.amount = receipt.amount;
+        pmt.voided = 0;
+        pmt.txnmode = 'ONLINE';
+        pmt.txndate = dtSvc.serverDate;
+        pmt = em_payment.create(pmt);
+
+        def fees = receipt.bill.items;
+        fees.each{ fee -> 
+            em_app_fee.find([objid: fee.objid]).update([amtpaid: '{amount}', surcharge: fee.surcharge, penalty: fee.penalty]);
+            createPaymentItem(pmt, fee, fee.item, 'FEE', fee.amount);
+            if (fee.surcharge > 0) {
+                createPaymentItem(pmt, fee, fee.surchargeacct, 'SURCHARGE', fee.surcharge);
+            }
+            if (fee.penalty > 0) {
+                createPaymentItem(pmt, fee, fee.penaltyacct, 'PENALTY', fee.penalty);
+            }
+        }
+
+        signalWf(app, 'post-payment');
+        return receipt;
+    }
+
+    @ProxyMethod
+    public void voidPayment(voidreceipt) {
+        def receipt = voidreceipt.receipt;
+        def pmt = em_payment.find([refid: receipt.objid]).first();
+        if (pmt) {
+            em_app.find([objid: pmt.appid]).update([state: 'FORPAYMENT', amtpaid: 0]);
+            em_app_fee.find([parentid: pmt.appid]).update([amtpaid: 0]);
+            em_payment_item.find([parentid: pmt.objid]).delete();
+            em_payment.find([objid: pmt.objid]).delete();
+            signalWf([objid: pmt.appid], 'void-payment');
+        }
+    }
+
+    def createPaymentItem(pmt, fee, acct, accttype, amount) {
+        def pitem = [:];
+        pitem.parentid = pmt.objid;
+        pitem.refid = fee.objid;
+        pitem.reftype = 'application_fee';
+        pitem.acct = [objid: acct.objid, type: accttype];
+        pitem.amount = amount;
+        pitem.discount = 0;
+        pitem.remarks = null;
+        em_payment_item.create(pitem);
+    }
+
+    void signalWf(app, action) {
+        def taskid = em_app.select('taskid').find([objid: app.objid]).val();
+        def wf = [:];
+        wf.taskid = taskid;
+        wf.processname = 'application';
+		wf.action = action;
+		wf.refid = app.objid;
+		wfSvc.signal(wf);
+    }
+
+}

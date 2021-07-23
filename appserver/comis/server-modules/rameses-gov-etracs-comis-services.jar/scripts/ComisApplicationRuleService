@@ -1,0 +1,80 @@
+import com.rameses.annotations.*;
+import com.rameses.util.*;
+import com.rameses.rules.common.*;
+import java.rmi.server.*;
+import comis.facts.*;
+import comis.actions.*;
+
+public class ComisApplicationRuleService  {
+
+	@Service("RuleExecutorService")
+	def ruleSvc;
+
+	@DataContext('application')
+	def em_app;
+	
+	@DataContext('vw_cemetery_resource')
+	def em_view_resource;
+
+
+	@ProxyMethod
+	public def execute( app ) {
+		def request = buildRequest(app);
+		def res = ruleSvc.execute( "burialpermitapplication", request.facts, request.actions, null );
+		
+		def bpa = request.facts.find{it instanceof BurialPermitApplication};
+		app.leaseduration = bpa.leaseduration;
+		app.renewable = bpa.renewable;
+		app.fees = [];
+		bpa.fees.each{ fee ->
+			app.fees << [
+				objid: fee.objid,
+				parentid: app.objid,
+				item: [objid: fee.acctid],
+				amount: fee.amount,
+				surcharge: fee.surcharge,
+				penalty: fee.penalty,
+				amtpaid: 0,
+				surchargepaid: 0,
+				penaltypaid: 0,
+				total: fee.amount + fee.surcharge + fee.penalty,
+			]
+		};
+		app.amount = 0;
+		app.amtpaid = 0;
+		if (app.fees) {
+			app.amount = app.fees.amount.sum();
+			app.amount += app.fees.surcharge.sum();
+			app.amount += app.fees.penalty.sum();
+		}
+	}
+
+	def buildRequest(app){
+		def vwresource = em_view_resource.find([objid: app.resourceinfo.objid]).first();
+		def request = [:]
+
+		request.facts = [];
+		request.facts << new CemeteryResource(vwresource);
+		request.facts << new Cemetery(vwresource.cemetery);
+		request.facts << new BurialPermitApplication(app);
+
+		def prevapp  = em_app.read([objid: app.prevappid]);
+		if (prevapp) {
+			request.facts << new PrevBurialPermitApplication(prevapp);
+		}
+
+		request.actions = buildActions(request);
+		return request
+	}
+
+	def buildActions(request) {
+		def actions = new RuleAction();
+		actions.addCommand('set-renewable', new SetRenewable(request:request));
+		actions.addCommand('add-fee', new AddFee(request: request));
+		actions.addCommand('calc-surcharge', new CalcSurcharge(request: request));
+		actions.addCommand('calc-penalty', new CalcPenalty(request: request));
+		actions.addCommand('compute-lease-duration', new ComputeLeaseDuration(request: request));
+		return actions;
+	}
+
+}

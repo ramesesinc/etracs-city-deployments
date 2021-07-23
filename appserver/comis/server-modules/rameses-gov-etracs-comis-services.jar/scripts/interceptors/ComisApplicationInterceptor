@@ -1,0 +1,75 @@
+import com.rameses.annotations.*
+import com.rameses.common.*;
+import com.rameses.services.extended.*
+
+class ComisApplicationInterceptor {
+	@Env 
+	def env;
+
+	@Service('DateService')
+    def dtSvc;
+	
+	@Service('ComisApplicationService')
+	def svc;
+
+	@Service('ComisApplicationRuleService')
+	def ruleSvc;
+
+	@Service("WorkflowTaskService")
+	def wfSvc;
+
+	@DataContext('application')
+	def em_app;
+
+	@DataContext('application_fee')
+	def em_fee;
+
+	@DataContext('cemetery_resource')
+    def em_cem_resource;
+
+	@After(pattern="PersistenceService.update", eval="#{args[0]._schemaname=='application'}") 
+	public void afterUpdate( evt ) {
+		def app = evt.args[0];
+		svc.afterUpdate(app);
+	}
+
+	@Before(pattern="PersistenceService.removeEntity", eval="#{args[0]._schemaname=='application'}") 
+	public void beforeDelete( evt ) {
+		def app = evt.args[0];
+		svc.beforeDelete(app);
+	}
+
+	@After(pattern="WorkflowTaskService.signal", eval="#{args[0].processname == 'application' && args[0].taskstate == 'approver'}")
+	public void approveApplication(evt) {
+		def res = evt.result;
+		svc.approve([objid: res.refid]);
+	}
+
+	@After(pattern="WorkflowTaskService.signal", eval="#{args[0].processname == 'application' && args[0].taskstate == 'releaser'}")
+	public void releaseApplication(evt) {
+		def res = evt.result;
+		svc.release([objid: res.refid]);
+	}
+
+	@After(pattern="ComisApplicationService.approve", eval="#{result.apptype == 'TRANSFER'}")
+	public void afterApproveTransfer(evt) {
+		def app = evt.result;
+		//close prevapp 
+		em_app.find([objid: app.prevappid]).update([state: 'CLOSED']);
+		signalWf([objid: app.prevappid], 'closed');
+
+		//release transferred resource
+		em_cem_resource.find([currentappid: app.prevappid]).update([currentappid: '{NULL}']);
+	}
+
+    void signalWf(app, action) {
+        def taskid = em_app.select('taskid').find([objid: app.objid]).val();
+        def wf = [:];
+        wf.taskid = taskid;
+        wf.processname = 'application';
+		wf.action = action;
+		wf.refid = app.objid;
+		wfSvc.signal(wf);
+    }
+
+}

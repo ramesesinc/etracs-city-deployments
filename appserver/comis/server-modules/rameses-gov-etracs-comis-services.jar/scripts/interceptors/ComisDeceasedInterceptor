@@ -1,0 +1,28 @@
+import com.rameses.annotations.*
+import com.rameses.common.*;
+import com.rameses.services.extended.*
+
+class ComisDeceasedInterceptor {
+	
+	@Before(pattern="PersistenceService.create", eval="#{args[0]._schemaname=='deceased'}") 
+	public void beforeCreate( evt ) {
+		def deceased = evt.args[0];
+		updateAgeInfo(deceased);
+	}
+
+	@Before(pattern="PersistenceService.update", eval="#{args[0]._schemaname=='deceased'}") 
+	public void beforeUpdate( evt ) {
+		def deceased = evt.args[0];
+		updateAgeInfo(deceased);
+	}
+
+	void updateAgeInfo(deceased) {
+		if (deceased.agetype == 'DAY') {
+			deceased.ageinmon = 0;
+		} else if (deceased.agetype == 'YEAR') {
+			deceased.ageinmon = deceased.age * 12;
+		} else {
+			deceased.ageinmon = deceased.age;
+		}
+	}
+}

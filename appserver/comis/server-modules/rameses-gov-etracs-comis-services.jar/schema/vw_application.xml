@@ -1,0 +1,47 @@
+<schema>
+    <element tablename="vw_application">
+        <field name="objid" primary="true" />
+        <field name="state" />
+        <field name="online" type="boolean" />
+        <field name="apptype" />
+        <field name="appno" />
+        <field name="dtapplied" />
+        <field name="dtapproved" />
+        <field name="appyear" type="integer" />
+        <field name="applicant_name" />
+        <field name="applicant_address" />
+        <field name="dtexpiry" />
+        <field name="amount" type="decimal" />
+        <field name="amtpaid" type="decimal" />
+        <field name="deceased_name" />
+        <field name="deceased_nationality" />
+        <field name="deceased_age" />
+        <field name="deceased_sex" />
+        <field name="deceased_dtdied" />
+        <field name="deceased_permissiontype" />
+        <field name="deceased_causeofdeath" />
+        <field name="resourceinfo_objid" />
+        <field name="resourceinfo_code" />
+        <field name="resourceinfo_name" />
+        <field name="resource_areasqm" type="decimal" />
+        <field name="resource_length" type="decimal" />
+        <field name="resource_width" type="decimal" />
+        <field name="block_objid" />
+        <field name="block_code" />
+        <field name="block_name" />
+        <field name="resource_objid" />
+        <field name="resource_type" />
+        <field name="section_objid" />
+        <field name="section_code" />
+        <field name="section_name" />
+        <field name="cemetery_objid" />
+        <field name="cemetery_code" />
+        <field name="cemetery_name" />
+        <field name="task_objid" />
+        <field name="task_state" />
+        <field name="task_enddate" />
+        <field name="task_assignee_objid" />
+        <field name="task_actor_objid" />
+        <field name="task_prevtaskid" />
+    </element>
+</schema>

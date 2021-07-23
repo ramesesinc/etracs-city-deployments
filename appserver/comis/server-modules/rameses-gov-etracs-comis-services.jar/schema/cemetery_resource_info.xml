@@ -1,0 +1,20 @@
+<schema>
+    <element tablename="cemetery_section_block_resource_info">
+        <field name="objid" primary="true" prefix="CSBRI" />
+        <field name="parentid" required="true" />
+        <field name="state" required="true" caption="State" searchable="true" defaultValue="DRAFT"/>
+        <field name="resource_objid" required="true" />
+        <field name="code" required="true" caption="Code" searchable="true" />
+        <field name="name" required="true" caption="Resource" searchable="true" />
+        <field name="areasqm" required="true" caption="Area (sqm)" type="decimal" />
+        <field name="length" caption="Length" type="decimal"  />
+        <field name="width" caption="Width" type="decimal"  />
+        <field name="ui" />
+        <complex name="resource" ref="resource" jointype="many-to-one" required="true">
+            <key field="resource_objid" target="objid" />
+        </complex>
+        <complex name="parent" ref="cemetery_resource" jointype="many-to-one" required="true">
+            <key field="parentid" target="objid" />
+        </complex>
+    </element>
+</schema>

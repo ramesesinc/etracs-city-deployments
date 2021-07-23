@@ -1,0 +1,110 @@
+import com.rameses.annotations.*;
+
+public class ComisUtil  {
+
+	def qtrs = [
+		[],
+		[start: '-01-01', end: '-04-01', yr: 0, caption: '1st Quarter'],
+		[start: '-04-01', end: '-07-01', yr: 0, caption: '2nd Quarter'],
+		[start: '-07-01', end: '-10-01', yr: 0, caption: '3rd Quarter'],
+		[start: '-10-01', end: '-01-01', yr: 1, caption: '4th Quarter'],
+	]
+
+	@ProxyMethod
+	public void buildStartEndDateFilter(params) {
+		if (!params.filters) params.filters = [];
+		if (!params.query) params.query = [:]
+
+		if ('YEAR'.equalsIgnoreCase(params.period)) {
+			params.filters << 'dtdied >= :startdate AND dtdied < :enddate';
+			params.startdate = params.year + '-01-01';
+			params.enddate = (params.year + 1) + '-01-01';
+			params.query.period = 'For the Year ' + params.year;
+			params.query.year = params.year;
+		} else if ('QUARTER'.equalsIgnoreCase(params.period)) {
+			params.filters << 'dtdied >= :startdate AND dtdied < :enddate';
+			def qtr = qtrs[params.qtr];
+			params.startdate = (params.year + qtr.yr) + qtr.start;
+			params.enddate = (params.year + qtr.yr) + qtr.end;
+			params.query.period = 'For ' + qtr.caption + ' of ' + params.year;
+			params.query.qtr = params.qtr;
+		} else if ('MONTH'.equalsIgnoreCase(params.period)) {
+			params.filters << 'dtdied >= :startdate AND dtdied < :enddate';
+			def monthidx = params.month.index;
+			def startmon = padLeft(monthidx, 2, '0');
+			def endmon = monthidx == 12 ? padLeft(1, 2, '0') : padLeft(monthidx+1, 2, '0');
+			def yr = monthidx == 12 ? 1 : 0;
+			params.startdate = (params.year + yr) + '-' + startmon + '-01';
+			params.enddate = (params.year + yr) + '-' + endmon + '-01';
+			params.query.period = 'For the Month of ' + params.month.caption + ', ' + params.year;
+			params.query.month = monthidx;
+		} 
+	}
+
+	@ProxyMethod
+	public void buildAgeGroupFilter(params) {
+		if (!params.agegroup) return;
+		if ('INFANT'.equalsIgnoreCase(params.agegroup.id)) {
+			params.filters << ' ageinmon <= 11 ';
+			params.query.age = '0 TO 11 MONTHS';
+		} else if ('18below'.equalsIgnoreCase(params.agegroup.id)) {
+			params.filters << ' ageinmon <= :18below ';
+			params['18below'] = 18 * 12;
+			params.query.age = '18 YEARS OLD AND BELOW';
+		} else if ('60above'.equalsIgnoreCase(params.agegroup.id)) {
+			params.filters << ' ageinmon >= :60above ';
+			params['60above'] = 60 * 12;
+			params.query.age = '60 YEARS OLD AND ABOVE';
+		} else if ('range'.equalsIgnoreCase(params.agegroup.id)) {
+			params.filters << ' ageinmon >= :agefrom AND ageinmon <= :ageto ';
+			params.agefrom = getAgeInMonth(params.agefrom, params.agefromtype);
+			params.ageto = getAgeInMonth(params.ageto, params.agetotype);
+			params.query.age = 'BETWEEN ' + toAgeStr(params.agefrom, params.agefromtype) + ' AND ' + toAgeStr(params.ageto, params.agetotype);
+		} else {
+			throw new Exception('agegroup ' + params.agegroup.id + ' is not supported.');
+		}
+	}
+
+	@ProxyMethod
+	public void buildLguFilter(params) {
+		if (params.lgu) {
+			params.filters << ' lgu = :lguid ';
+			params.lguid = params.lgu.objid;
+			params.query.lgu = params.lgu.objid;
+		} else {
+			params.query.lgu = 'ALL';
+		}
+	}
+
+	@ProxyMethod
+	public def padLeft(val, padcount, padstr) {
+		return val.toString().padLeft(padcount, padstr);
+	}
+
+	@ProxyMethod
+	public def getAgeInMonth(age, agetype) {
+		if ('DAY'.equalsIgnoreCase(agetype )) {
+			return 0;
+		} else if ('MONTH'.equalsIgnoreCase(agetype )) {
+			return age;
+		} else if ('YEAR'.equalsIgnoreCase(agetype )) {
+			return age * 12;
+		} else {
+			throw new Exception('agetype ' + agetype + ' is not supported.');
+		}
+	}
+
+	@ProxyMethod
+	public def toAgeStr(age, agetype) {
+		def str = age+'';
+		if (!'YEAR'.equalsIgnoreCase(agetype )) {
+			str += ' ' + agetype;
+
+			if (age > 1) {
+				str += 's';
+			}
+		}
+		return str.toLowerCase();
+	}
+
+}
