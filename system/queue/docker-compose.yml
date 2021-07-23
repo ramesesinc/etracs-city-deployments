@@ -39,6 +39,7 @@ services:
       - "9960:8060"
     volumes:
       - ../../_custom/queue/res:/webroot/res/queue/res
+      - ../../_custom/queue/audio:/webroot/res/queue/audio
       - ../../_custom/queue/lgu-logo.png:/webroot/res/images/lgu-logo.png
       - ../../_custom/queue/files/queue.pg/content:/webroot/files/queue.pg/content
       - ../../_custom/queue/files/queueing.pg/content:/webroot/files/queueing.pg/content
