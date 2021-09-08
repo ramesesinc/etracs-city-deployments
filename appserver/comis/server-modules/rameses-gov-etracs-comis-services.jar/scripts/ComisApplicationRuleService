@@ -10,6 +10,9 @@ public class ComisApplicationRuleService  {
 	@Service("RuleExecutorService")
 	def ruleSvc;
 
+	@Service("DateService")
+	def dtSvc;
+
 	@DataContext('application')
 	def em_app;
 	
@@ -50,6 +53,9 @@ public class ComisApplicationRuleService  {
 	}
 
 	def buildRequest(app){
+		if (app.dtapplied) app.dtapplied = dtSvc.parse('yyyy-MM-dd', app.dtapplied);
+		if (app.dtapproved) app.dtapproved = dtSvc.parse('yyyy-MM-dd', app.dtapproved);
+		if (app.dtexpiry) app.dtexpiry = dtSvc.parse('yyyy-MM-dd', app.dtexpiry);
 		def vwresource = em_view_resource.find([objid: app.resourceinfo.objid]).first();
 		def request = [:]
 
@@ -58,8 +64,8 @@ public class ComisApplicationRuleService  {
 		request.facts << new Cemetery(vwresource.cemetery);
 		request.facts << new BurialPermitApplication(app);
 
-		def prevapp  = em_app.read([objid: app.prevappid]);
-		if (prevapp) {
+		if (app.prevappid) {
+			def prevapp  = em_app.read([objid: app.prevappid]);
 			request.facts << new PrevBurialPermitApplication(prevapp);
 		}
 
@@ -69,7 +75,7 @@ public class ComisApplicationRuleService  {
 
 	def buildActions(request) {
 		def actions = new RuleAction();
-		actions.addCommand('set-renewable', new SetRenewable(request:request));
+		actions.addCommand('setrenewable', new SetRenewable(request:request));
 		actions.addCommand('add-fee', new AddFee(request: request));
 		actions.addCommand('calc-surcharge', new CalcSurcharge(request: request));
 		actions.addCommand('calc-penalty', new CalcPenalty(request: request));
