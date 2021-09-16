@@ -28,19 +28,17 @@ class ComisApplicationReportInterceptor {
 		def app = em_app.read([objid: appid]);
 		if (!app) throw new Exception('Application does not exist or has already been deleted.')
 
-		def resource = app.resourceinfo.parent;
-		def block = resource.parent;
-		def section = block.parent;
-		def cemetery = section.parent;
+		def resource = app.resourceinfo.resource;
+		def cemetery = app.resourceinfo.cemetery;
 		cemetery.isnew = cemetery.isnew == 1
 
 		def data = [:]
 		app.applicant.address = app.applicant.address.replaceAll("\n","");
-		app.isoldniche = app.resourceinfo.resource.objid == 'NICHE' && !cemetery.isnew;
-		app.isnewniche = app.resourceinfo.resource.objid == 'NICHE' && cemetery.isnew;
-		app.istomb = app.resourceinfo.resource.objid == 'TOMB';
-		app.ismausoleum = app.resourceinfo.resource.objid == 'MAUSOLEUM';
-		app.isossuary = app.resourceinfo.resource.objid == 'OSSUARY';
+		app.isoldniche = resource.objid == 'APART_OLD';
+		app.isnewniche = resource.objid == 'APART_NEW';
+		app.istomb = resource.objid == 'TOMB';
+		app.ismausoleum = resource.objid == 'MAUSOLEUM';
+		app.isossuary = resource.objid == 'OSSUARY';
 		data.resourceinfo = getResourceInfo(app);
 		data.cemetery = cemetery;
 		data.putAll(app);
@@ -53,10 +51,7 @@ class ComisApplicationReportInterceptor {
 		def app = em_app.read([objid: appid]);
 		if (!app) throw new Exception('Application does not exist or has already been deleted.')
 
-		def resource = app.resourceinfo.parent;
-		def block = resource.parent;
-		def section = block.parent;
-		def cemetery = section.parent;
+		def cemetery = app.resourceinfo.cemetery;
 		cemetery.isnew = cemetery.isnew == 1
 
 		def data = [:]
@@ -77,10 +72,7 @@ class ComisApplicationReportInterceptor {
 		def app = em_app.read([objid: appid]);
 		if (!app) throw new Exception('Application does not exist or has already been deleted.')
 
-		def resource = app.resourceinfo.parent;
-		def block = resource.parent;
-		def section = block.parent;
-		def cemetery = section.parent;
+		def cemetery = app.resourceinfo.cemetery;
 		cemetery.isnew = cemetery.isnew == 1
 
 		def data = [:]
@@ -102,10 +94,7 @@ class ComisApplicationReportInterceptor {
 		def app = em_app.read([objid: appid]);
 		if (!app) throw new Exception('Application does not exist or has already been deleted.')
 
-		def resource = app.resourceinfo.parent;
-		def block = resource.parent;
-		def section = block.parent;
-		def cemetery = section.parent;
+		def cemetery = app.resourceinfo.cemetery;
 		cemetery.isnew = cemetery.isnew == 1
 
 		def data = [:]
@@ -123,9 +112,9 @@ class ComisApplicationReportInterceptor {
 
 	def getResourceInfo(app) {
 		def resource = app.resourceinfo.parent;
-		def block = resource.parent;
-		def section = block.parent;
-		def cemetery = section.parent;
+		def block = app.resourceinfo.block;
+		def section = app.resourceinfo.section;
+		def cemetery = app.resourceinfo.cemetery;
 		cemetery.isnew = cemetery.isnew == 1
 
 		def resourceinfo = app.remove('resourceinfo');
