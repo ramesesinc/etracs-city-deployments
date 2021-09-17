@@ -1,19 +1,19 @@
 [Docker Server]
-IP  : 192.168.0.2
-User: server
-Pass: tangub
+IP  : localhost
+User: 
+Pass: 
 
 
 [DB Access]
-IP   : 192.168.0.2
+IP   : localhost
 User : root
 Pass : P@ssw0rd#
 
 
 [Webmin]
-URL  : https://192.168.0.2:10000
-User : <Same user in Docker Server>
-Pass : <Same pass in Docker Server>
+URL  : https://localhost:10000
+User : <Same access to Docker Server>
+Pass : <Same access to Docker Server>
 
 
 [Portainer]
@@ -23,8 +23,8 @@ Pass : p@ssw0rd
 
 
 [Samba]
-URL  : \\192.168.0.2
-User : server
+URL  : \\localhost
+User : 
 Pass : p@ssw0rd
 
 
@@ -37,9 +37,9 @@ docker pull ramesesinc/gdx-proxy-server:v002
 docker pull ramesesinc/gdx-client:1.03.01
 docker pull ramesesinc/etracs-web:2.5.02.01
 docker pull ramesesinc/node-download-server:0.0.3
-docker pull ramesesinc/etracs-server-city:2.5.04.02.01
 docker pull ramesesinc/local-epayment-server:2.5.01.02.05
+docker pull ramesesinc/etracs-server-city:2.5.04.03.01
 
 
 [GitHub]
-git clone -b misoc-tangub https://github.com/ramesesinc/etracs-city-deployments.git docker
+git clone https://github.com/ramesesinc/etracs-city-deployments.git
