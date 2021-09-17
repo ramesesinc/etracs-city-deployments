@@ -1,19 +1,19 @@
 [Docker Server]
-IP  : 169.254.223.2
-User: lguiriga
-Pass: p@ssw0rd
+IP  : localhost
+User: 
+Pass: 
 
 
 [DB Access]
-IP   : 169.254.223.2
+IP   : localhost
 User : root
 Pass : P@ssw0rd#
 
 
 [Webmin]
-URL  : https://169.254.223.2:10000
-User : <Same as Docker Server>
-Pass : <Same as Docker Server>
+URL  : https://localhost:10000
+User : <Same access to Docker Server>
+Pass : <Same access to Docker Server>
 
 
 [Portainer]
@@ -23,8 +23,8 @@ Pass : p@ssw0rd
 
 
 [Samba]
-URL  : \\169.254.223.2
-User : lguiriga
+URL  : \\localhost
+User : 
 Pass : p@ssw0rd
 
 
@@ -37,9 +37,9 @@ docker pull ramesesinc/gdx-proxy-server:v002
 docker pull ramesesinc/gdx-client:1.03.01
 docker pull ramesesinc/etracs-web:2.5.02.01
 docker pull ramesesinc/node-download-server:0.0.3
-docker pull ramesesinc/etracs-server-city:2.5.04.02.01
 docker pull ramesesinc/local-epayment-server:2.5.01.02.05
+docker pull ramesesinc/etracs-server-city:2.5.04.03.01
 
 
 [GitHub]
-git clone -b camsur-iriga https://github.com/ramesesinc/etracs-city-deployments.git
+git clone https://github.com/ramesesinc/etracs-city-deployments.git
