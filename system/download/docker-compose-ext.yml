@@ -2,6 +2,11 @@ version: "3"
 
 services:
 
+   download-nginx-server:
+      ports:
+         - "85:80"
+
+
    download-node-server:
       volumes:
          ## mounted RPTIS client build 2.5.03.02.01          
