@@ -1501,3 +1501,51 @@ go
 
 -- INSERT INTO sys_var (name, value, description, datatype, category) 
 -- VALUES ('deposit_collection_by_bank_account', '0', 'Deposit collection by bank account instead of by fund', 'checkbox', 'TC');
+
+
+
+-- ## 2021-10-05
+
+select t0.*, 
+  (
+    select top 1 objid 
+    from sys_usergroup_member 
+    where user_objid = t0.user_objid 
+      and usergroup_objid = t0.usergroup_objid 
+      and isnull(org_objid,'') = isnull(t0.org_objid,'') 
+  ) as ugmid 
+into ztmp_ugm_duplicates 
+from ( 
+  select user_objid, usergroup_objid, org_objid, count(*) as icount 
+  from sys_usergroup_member 
+  group by user_objid, usergroup_objid, org_objid 
+  having count(*) > 1 
+)t0 
+go 
+
+select ugm.* 
+into ztmp_ugm_duplicates_phase2
+from sys_usergroup_member ugm, ztmp_ugm_duplicates z 
+where ugm.user_objid = z.user_objid 
+  and ugm.usergroup_objid = z.usergroup_objid 
+  and isnull(ugm.org_objid,'') = isnull(z.org_objid,'') 
+  and ugm.objid <> z.ugmid 
+go 
+
+delete from sys_usergroup_member where objid in (
+  select objid from ztmp_ugm_duplicates_phase2 
+  where objid = sys_usergroup_member.objid 
+)
+go 
+
+drop table ztmp_ugm_duplicates_phase2
+go 
+drop table ztmp_ugm_duplicates
+go 
+
+
+
+create unique index uix_user_usergroup_org on sys_usergroup_member (user_objid, usergroup_objid, org_objid)
+go 
+
+
