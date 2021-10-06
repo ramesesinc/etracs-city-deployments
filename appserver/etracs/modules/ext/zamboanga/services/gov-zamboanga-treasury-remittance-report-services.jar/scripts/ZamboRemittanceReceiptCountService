@@ -1,0 +1,22 @@
+import com.rameses.annotations.*; 
+
+class ZamboRemittanceReceiptCountService {
+	
+	@DataContext('remittance')
+	def rem_db; 
+
+	@ActiveDB('zambo_remittance_report') 
+	def report_db;
+
+	@ProxyMethod 
+	public def getReport( param ) {
+		def remdata = rem_db.find([ objid: param.remittanceid ]).first(); 
+		
+		def result = [headers: [:]];
+		result.headers.REMITTANCE_NO = remdata.controlno; 
+		result.headers.REMITTANCE_DATE = remdata.controldate;  
+		result.items = report_db.getReceipts([ remittanceid: param.remittanceid ]); 
+		return result; 
+	}
+
+}

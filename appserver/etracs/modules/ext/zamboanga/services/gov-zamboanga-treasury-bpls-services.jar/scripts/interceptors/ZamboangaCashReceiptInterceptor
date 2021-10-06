@@ -1,0 +1,63 @@
+import com.rameses.annotations.*;
+
+class ZamboangaCashReceiptInterceptor {
+	
+	@DataContext('zamboanga_af51')
+	def af51_db;
+
+	@DataContext('zamboanga_af51_ext')
+	def af51ext_db;
+
+	@DataContext('zamboanga_af51_bpls')
+	def af51bp_db;
+
+	@Env 
+	def env; 
+
+	@After( pattern="CashReceiptService.post", eval="#{args[0]?.collectiontype?.handler == 'zamboanga_bpls'}")
+	public void afterPostPayment( evt ) {
+		def res = evt.args[0]; 
+
+		// insert af51 record in cto db
+		def m = [:];
+		m.orno = res.receiptno; 
+		m.ordate = res.receiptdate; 
+		m.payee = res.paidby; 
+		m.orstatus = '1';
+		m.orbatchno = res.stub.toString();
+		m.kindofsystem = 'BPLS';
+		m.ortotal = res.amount; 
+		m.dateprinted = res.txndate;
+		m.ortypecode = 1;
+		m.systemid = 1;
+		m.fromboss = 0;
+		
+		if ( m.prefix ) m.series = m.prefix.charAt(0);
+		else if ( m.suffix ) m.series = m.suffix.charAt(0);
+		else m.series = '';
+
+		af51_db.create( m );  
+
+		// insert af51_bpls record in bpls db
+		res.af51bpls.each{ 
+			it.orno = res.receiptno; 
+			it.ordate = res.receiptdate;
+			af51bp_db.create( it ); 
+
+			it.ornum = res.receiptno; 
+			it.sdate = res.txndate;
+			it.amount = it.total;
+			af51ext_db.create( it ); 
+		} 
+	}
+
+
+	@After( pattern="CashReceiptVoidService.post", eval="#{args[0]?.receipt?.collectiontype?.handler == 'zamboanga_bpls'}")
+	public void afterVoidPayment( evt ) {
+		def param = evt.args[0]; 
+		
+		def receipt = param.receipt; 
+		af51_db.find([ orno: receipt.receiptno, ordate: receipt.receiptdate ]).update([ orstatus: 'C' ]);  
+		af51ext_db.removeItems([ orno: receipt.receiptno, ordate: receipt.receiptdate ]);
+	}
+}

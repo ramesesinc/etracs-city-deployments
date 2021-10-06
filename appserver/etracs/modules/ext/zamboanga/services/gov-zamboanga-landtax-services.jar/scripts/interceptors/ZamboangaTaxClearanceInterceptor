@@ -1,0 +1,43 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+
+class ZamboangaTaxClearanceInterceptor {
+	@ActiveDB('zamboanga_taxclearance')
+	def em
+
+	@DataContext('faas')
+	def em_faas
+
+	@DataContext('rpu_assessment')
+	def em_rpu_assessment
+
+	@After(pattern="LandTaxReportTaxClearanceService.openClearance", index=10000)
+	public void afterOpenCertification(evt) {
+		def cert = evt.result
+		updateBuildingInfo(cert)
+	}
+
+	void updateBuildingInfo(cert) {
+		cert.items.each {
+			if ('bldg'.equalsIgnoreCase(it.rputype)) {
+				updateBuildingLotNoInfo(it)	
+			}
+		}
+	}
+
+	def updateBuildingLotNoInfo(certitem) {
+		//update lotno usign format 
+		// class/bldg - latno
+		// return default if faas is not available
+		def faas = em_faas.select('rpuid').find([objid: certitem.faasid]).first()
+		if (!faas) return 
+		def assessments = em.getAssessments(faas)
+		if (assessments) {
+			def lotno = assessments.code.join('/') + '-Bldg / '
+			lotno += certitem.cadastrallotno
+			certitem.cadastrallotno = lotno
+		}
+	}
+}

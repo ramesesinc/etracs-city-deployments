@@ -1,0 +1,353 @@
+import com.rameses.annotations.*;
+
+class ZamboangaBusinessPermitBillingService {
+	
+	@ActiveDB(value='zamboanga_bpls', em='zamboanga_bpls')
+	def bpls_db; 
+
+	@ActiveDB(value='zamboanga_cto_account', em='zamboanga_bpls')
+	def cto_db; 
+
+	@Service('DateService')
+	def dateSvc; 
+
+	@DataContext('itemaccount')
+	def itemacct_db;
+
+	@DataContext('bpexpirydate')
+	def bpexpiry_db;
+
+
+	@ProxyMethod 
+	public def getBusinessProfiles( param ) {
+		def filters = []; 
+		if ( param.bin ) {
+			param.binfilter = param.bin.toString()+'%'; 
+			filters << ''' a.businessid LIKE $P{binfilter} ''';
+		}
+		if ( param.appno ) {
+			param.appnofilter = param.appno.toString()+'%'; 
+			filters << ''' a.applpermitnr LIKE $P{appnofilter} ''';
+		}
+
+		if ( !filters ) throw new Exception('Please provide a search criteria'); 
+
+		param.filters = filters.join(' AND '); 
+		param._limit = param._rowsize = 25; 
+		
+		def list = bpls_db.getBusinessProfiles( param ); 
+		list.each{
+			it.address = resolveAddress( it.address );
+		} 
+		return list; 
+	}
+
+
+	@ProxyMethod
+	public def getPaymentOrderInfo( param ) { 
+		def bill = getBilling( param );
+
+		def m = [:];
+		m.paidby = bill.paidby;
+		m.paidbyaddress = bill.paidbyaddress; 
+		m.particulars = bill.txntypename;
+		m.txntypename = bill.txntypename;
+		m.txntype = bill.txntype; 
+		m.refid = bill.objid;
+		m.refno = param.refno;
+		m.amount = bill.amount;
+		m.expirydate = bill.expirydate;
+		m.billitems = bill.billitems;
+		m.af51bpls = bill.af51bpls;
+		m.items = bill.items;
+		m.info = [:];
+		return m;
+	} 
+
+	private def decformat = new java.text.DecimalFormat('0.0000');
+
+	@ProxyMethod
+	public def getBilling( param ) { 
+		def b = bpls_db.findBusinessProfile([ bin: param.refno ]); 
+		if ( !b ) throw new Exception(''+ param.refno +' business profile not found'); 
+
+		b.address = resolveAddress( b.address ); 
+		b.owneraddress = resolveAddress( b.owneraddress ); 
+
+		def svrYear = dateSvc.getServerYear();
+		def opt = param.payoption; 
+		if ( opt == null ) opt = [:]; 
+		if ( opt.year == null ) opt.year = svrYear;
+		if ( opt.qtr == null ) opt.qtr = 4;
+
+		opt.bin = b.bin; 
+		opt.currentyear = svrYear; 
+		opt.yearqtr = (opt.year * 365) + opt.qtr; 
+
+		def rundate = dateSvc.getBasicServerDate();
+		def ledgers = bpls_db.getLedgers( opt ); 
+		ledgers.each{  
+			def a = bpls_db.findAccount([ acctcode: it.acctcode, bclass: it.bclass, sclass: it.sclass, xclass: it.xclass ]);
+			def ia = itemacct_db.find([ objid: a.refid ]).first(); 
+			if ( !ia ) throw new Exception("No item account found for '"+ it.particulars +"' ("+ a.refno +')'); 
+
+			it.businessid = b.bin;
+			it.amount = it.balance; 
+			it.remove('amtpaid'); 
+			it.remove('balance');
+			it.item = [
+				objid: a.refid, 
+				code: a.refno, 
+				title: it.particulars, 
+				fund: ia.fund 
+			]; 
+
+			it.payoption = opt; 
+			
+			def qtrs = []; 
+			qtrs << [qtr: 1, amount: it.q1, startdate: java.sql.Date.valueOf(''+ it.cyear +'-01-01')];
+			qtrs << [qtr: 2, amount: it.q2, startdate: java.sql.Date.valueOf(''+ it.cyear +'-04-01')];
+			qtrs << [qtr: 3, amount: it.q3, startdate: java.sql.Date.valueOf(''+ it.cyear +'-07-01')];
+			qtrs << [qtr: 4, amount: it.q4, startdate: java.sql.Date.valueOf(''+ it.cyear +'-10-01')];
+			qtrs = qtrs.findAll{( it.amount > 0 )}
+
+			if ( it.qtrly == 1 ) { 
+				def intenddate = java.sql.Date.valueOf( new java.text.SimpleDateFormat('yyyy-MM-01').format(rundate)); 
+
+				def o = it;
+				qtrs.each{ qi-> 
+					qi.surcharge = qi.interest = 0.0; 
+					qi.expirydate = findExpiryDate( o.cyear, qi.qtr ); 
+					if ( rundate > qi.expirydate ) {
+						qi.surcharge = qi.amount * 0.25;
+						qi.surcharge = new BigDecimal( decformat.format( qi.surcharge ));
+
+						if ( o.acctcode == 582 ) {
+							int monthdiff = computeMonthDiff( qi.startdate, intenddate ); 
+							qi.monthdiff = monthdiff;
+
+							def rate = monthdiff * 0.02; 
+							if ( rate > 0.72 ) rate = 0.72; 
+
+							qi.interest = qi.amount * rate; 
+							qi.interest = new BigDecimal( decformat.format( qi.interest ));
+						}
+					}
+				}
+
+				it.fromqtr = qtrs.min{ it.qtr }?.qtr;
+				it.toqtr = qtrs.max{ it.qtr }?.qtr; 
+			}
+			else {
+				it.fromqtr = it.toqtr = 0; 
+				it.remarks = '- '+ it.cyear.toString(); 
+			}
+
+			it.surcharge = qtrs.sum{( it.surcharge ? it.surcharge : 0.0 )}
+			if ( it.surcharge == null ) it.surcharge = 0.0; 
+
+			it.interest = qtrs.sum{( it.interest ? it.interest : 0.0 )}
+			if ( it.interest == null ) it.interest = 0.0;
+
+			it.total = it.amount + it.surcharge + it.interest; 
+
+			if ( it.qtrly == 1 && it.fromqtr > 0 ) {
+
+				it.remarks = '';
+	
+				if ( it.fromqtr == it.toqtr ) {
+					it.remarks = '- '+ it.cyear.toString() +' '+ resolveQtr( it.fromqtr ); 
+				}
+				else {
+					it.remarks = '- '+ it.cyear.toString() +' '+ resolveQtr( it.fromqtr ) +'-'+ resolveQtr( it.toqtr );  
+				}
+			} 
+
+			it.qtrdues = qtrs; 
+		} 
+
+		def res = [:];
+		res.permittype = "BUSINESS PERMIT";
+		res.txntypename = 'Business Permit';
+		res.txntype = 'zamboanga_bpls';
+
+		res.apptype = 'RENEW';
+		res.paidby = b.ownername; 
+		res.paidbyaddress = b.owneraddress?.text;
+
+		res.objid = b.businessid;
+		res.appno = param.refno;
+		res.billitems = ledgers;
+		res.amount = res.billitems.sum{( it.total ? it.total : 0.0 )} 
+		res.expirydate = dateSvc.getServerDate();
+
+		res.items = []; 
+
+		ledgers.each{ 
+			def m = [:]; 
+			m.item = it.item; 
+			m.amount = it.amount; 
+			m.remarks = it.remarks; 
+			m.businessid = it.businessid;
+			m.applpermitnr = it.applpermitnr;
+			m.cyear = it.cyear;
+			m.acctcode = it.acctcode;
+			m.bclass = it.bclass; 
+			m.sclass = it.sclass; 
+			m.xclass = it.xclass; 
+			m.qtrly = it.qtrly;
+			if ( it.qtrly == 1 ) {
+				m.amount1 = it.q1;
+				m.amount2 = it.q2;
+				m.amount3 = it.q3;
+				m.amount4 = it.q4; 				
+			}
+			else { 
+				m.amount1 = m.amount; 
+				m.amount2 = m.amount3 = m.amount4 = 0.0; 
+			} 
+			m.charged = 0; 
+			res.items << m; 
+		} 
+		
+		def charges = ledgers.findAll{( it.surcharge > 0 )} 
+		if ( charges ) {
+			def sa = cto_db.findSurchargeAccount(); 
+			def ia = itemacct_db.find([ objid: sa.refid ]).first(); 
+			if ( !ia ) throw new Exception("No item account found for Surcharge (Business Tax)"); 
+
+			charges.groupBy{[ businessid: it.businessid, applpermitnr: it.applpermitnr, cyear: it.cyear ]}.each{ k,v-> 
+				k.item = [:]; 
+				k.item.objid = ia.objid;
+				k.item.code = ia.code; 
+				k.item.title = ia.title; 
+				k.item.fund = ia.fund; 
+				k.amount = v.sum{ it.surcharge }
+				k.remarks = '- '+ k.cyear.toString(); 
+				k.acctcode = sa.acctcode;
+				k.bclass = sa.bcode;
+				k.sclass = sa.ccode;
+				k.xclass = sa.dcode;				
+				k.charged = 1; 
+				res.items << k; 
+
+				k.amount1 = k.amount2 = k.amount3 = k.amount4 = 0.0; 
+
+				def qtrdues = []; 
+				v.each{ oo-> 
+					qtrdues.addAll( oo.qtrdues );  
+				} 
+				qtrdues.groupBy{ it.qtr }.each{ kk,vv-> 
+					def amt = vv.sum{ it.surcharge }
+					if ( amt == null ) amt = 0.0; 
+
+					def sname = 'amount'+ kk.toString(); 
+					k.put(sname, k.get(sname) + amt); 
+				}
+			}
+		}
+
+		charges = ledgers.findAll{( it.interest > 0 )} 
+		if ( charges ) {
+			def sa = cto_db.findInterestAccount(); 
+			def ia = itemacct_db.find([ objid: sa.refid ]).first(); 
+			if ( !ia ) throw new Exception("No item account found for Interest (Business)"); 
+
+			charges.groupBy{[ businessid: it.businessid, applpermitnr: it.applpermitnr, cyear: it.cyear ]}.each{ k,v-> 
+				k.item = [:]; 
+				k.item.objid = ia.objid;
+				k.item.code = ia.code; 
+				k.item.title = ia.title; 
+				k.item.fund = ia.fund; 
+				k.amount = v.sum{ it.interest }
+				k.remarks = '- '+ k.cyear.toString(); 
+				k.acctcode = sa.acctcode;
+				k.bclass = sa.bcode;
+				k.sclass = sa.ccode;
+				k.xclass = sa.dcode;
+				k.charged = 1;
+				res.items << k; 
+
+				k.amount1 = k.amount2 = k.amount3 = k.amount4 = 0.0;  
+
+				def qtrdues = []; 
+				v.each{ oo-> 
+					qtrdues.addAll( oo.qtrdues );  
+				} 
+				qtrdues.groupBy{ it.qtr }.each{ kk,vv-> 
+					def amt = vv.sum{ it.interest }
+					if ( amt == null ) amt = 0.0; 
+
+					def sname = 'amount'+ kk.toString(); 
+					k.put(sname, k.get(sname) + amt); 
+				}
+			} 
+		}
+
+		// build data from af51_bpls 
+		res.af51bpls = []; 		
+		res.items.each{
+			def li = [:]; 
+			li.isdeficiency = 0;
+			li.businessid = it.businessid;
+			li.applpermitnr = it.applpermitnr; 
+			li.cyear = it.cyear; 
+			li.acctcode = it.acctcode; 
+			li.bclass = it.bclass;
+			li.sclass = it.sclass;
+			li.xclass = it.xclass; 
+			li.itemcode = it.item.code;
+			li.remarks = it.remarks;
+			li.particulars = it.item.title; 
+			li.amount1 = it.amount1; 
+			li.amount2 = it.amount2;
+			li.amount3 = it.amount3;
+			li.amount4 = it.amount4;
+			li.total = (li.amount1 + li.amount2 + li.amount3 + li.amount4);
+			res.af51bpls << li; 
+		} 
+		return res; 
+	} 
+
+	private def resolveAddress( addr ) {
+		if ( addr == null ) addr = [:]; 
+
+		def str1 = [addr.bldgno, addr.bldgname, addr.unitno].findAll{( it )}.join(' ').trim(); 
+		def str2 = [addr.street, addr.subdivision].findAll{( it )}.join(' ').trim();
+		def str3 = [addr.municity, addr.province].findAll{( it )}.join(' ').trim();
+		addr.text = [str1, str2, str3].findAll{( it )}.join(', ').trim();
+		return addr; 
+	} 
+
+	private def resolveQtr( qtr ) {
+		if ( qtr == 1 ) return '1st'; 
+		else if ( qtr == 2 ) return '2nd'; 
+		else if ( qtr == 3 ) return '3rd'; 
+		else if ( qtr == 4 ) return '4th'; 
+	}
+
+	private def findExpiryDate( year, qtr ) {
+		if ( !qtr ) return null; 
+
+		def o = bpexpiry_db.find([ year: year, qtr: qtr ]).first(); 
+		if ( o?.expirydate ) return o.expirydate; 
+
+		if ( qtr == 1 ) return java.sql.Date.valueOf( ''+ year +'-01-20' ); 
+		else if ( qtr == 2 ) return java.sql.Date.valueOf( ''+ year +'-04-20' ); 
+		else if ( qtr == 3 ) return java.sql.Date.valueOf( ''+ year +'-07-20' ); 
+		else if ( qtr == 4 ) return java.sql.Date.valueOf( ''+ year +'-10-20' ); 
+		else return null; 
+	}
+
+	private int computeMonthDiff( startdate, enddate ) {
+		if ( !startdate || !enddate ) return 0;
+
+		int months = 0; 
+		def datebean = new com.rameses.util.DateBean( startdate );  
+		while ( startdate < enddate ) {
+			months++; 
+			startdate = datebean.add('1M'); 
+		} 
+		return months; 
+	}
+}

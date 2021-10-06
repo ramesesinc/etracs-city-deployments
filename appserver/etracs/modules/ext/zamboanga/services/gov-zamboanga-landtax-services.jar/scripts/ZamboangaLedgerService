@@ -1,0 +1,13 @@
+import com.rameses.annotations.*
+import com.rameses.common.*
+import com.rameses.services.extended.*
+
+class ZamboangaLedgerService {
+	@ActiveDB('zamboanga_rptledger')
+	def em 
+
+	@ProxyMethod
+	public def getLedgers(params) {
+		return []
+	}
+}
