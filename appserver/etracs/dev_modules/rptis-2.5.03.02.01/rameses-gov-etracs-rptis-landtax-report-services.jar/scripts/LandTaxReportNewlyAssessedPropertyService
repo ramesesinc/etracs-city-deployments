@@ -1,0 +1,24 @@
+import com.rameses.annotations.*
+import com.rameses.common.*;
+
+class LandTaxReportNewlyAssessedPropertyService
+{
+	@Service('DateService')
+	def dtSvc;
+
+    @ActiveDB('rptreport_newly_assessed_property')
+    def em;     
+
+     
+	@Async 
+	@ProxyMethod 
+	public def buildReportData( params ) {
+		def parsedate = dtSvc.parseCurrentDate();
+		if(params.year > parsedate.year ) throw new Exception('Year must not exceed current year.');
+		
+		params.period = 'Effective on the Current Year ' + params.year;
+		def data = em.getList(params);
+		return [reportdata : data, parameters: [period: params.period]]; 
+	} 
+
+}	

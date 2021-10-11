@@ -136,7 +136,7 @@ class LandTaxReportDelinquencyService
 			if ( !list ) throw new Exception('No records found. Try rebuilding the delinquency for this barangay.')
 
 			list.each{
-				if (it.classcode.matches('A|AGR')) { 
+				if (it.classcode?.matches('A|AGR')) { 
 					it.area = numSvc.format('#,##0.0000', it.totalareaha) + ' ha.' 
 				} else {  
 					it.area = numSvc.format('#,##0.00', it.totalareasqm) + ' sqm' 
