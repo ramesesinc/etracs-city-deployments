@@ -16,8 +16,9 @@ class LandTaxReportNewlyAssessedPropertyService
 		def parsedate = dtSvc.parseCurrentDate();
 		if(params.year > parsedate.year ) throw new Exception('Year must not exceed current year.');
 		
-		params.period = 'Effective on the Current Year ' + params.year;
 		def data = em.getList(params);
+		if (!data) throw new Exception('No records found.');
+		data[0].period = 'Effective on the Current Year ' + params.year; 
 		return [reportdata : data, parameters: [period: params.period]]; 
 	} 
 

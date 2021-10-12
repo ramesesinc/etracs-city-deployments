@@ -6,7 +6,7 @@ class LandTaxReportRealPropertyPaymentService
 	@Service('DateService')
 	def dtSvc;
 
-    @ActiveDB('landtaxreport_newly_assessed_property')
+    @ActiveDB('landtaxreport_real_property_payment')
     def em;     
 
      
@@ -24,7 +24,7 @@ class LandTaxReportRealPropertyPaymentService
 		if (params.postingtype && params.postingtype.code == 'byrem'){
 			params.filter = ' rem_controldate >= $P{fromdate} AND rem_controldate < $P{todate} '
 		}
-		def data = em.getList(params);
+		def data = em.getPayments(params);
 		if (data) data[0].year = params.year;
 		return [reportdata : data ]; 
 	} 
