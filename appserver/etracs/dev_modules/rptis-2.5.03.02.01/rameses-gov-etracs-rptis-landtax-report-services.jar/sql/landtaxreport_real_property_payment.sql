@@ -8,6 +8,7 @@ select
   sum(amount) as amount 
 from vw_real_property_payment
 where ${filter}
+and year = $P{year}
 and voided = 0
 group by 
   owner_name,

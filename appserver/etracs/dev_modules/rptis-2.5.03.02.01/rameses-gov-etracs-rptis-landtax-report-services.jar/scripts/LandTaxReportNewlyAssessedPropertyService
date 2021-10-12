@@ -6,7 +6,7 @@ class LandTaxReportNewlyAssessedPropertyService
 	@Service('DateService')
 	def dtSvc;
 
-    @ActiveDB('rptreport_newly_assessed_property')
+    @ActiveDB('landtaxreport_newly_assessed_property')
     def em;     
 
      

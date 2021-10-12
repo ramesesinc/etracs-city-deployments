@@ -16,6 +16,8 @@ select
 		else 'MISCELLANEOUS'
 	end as rputype,
 	b.name as barangay,
+	rpi.year, 
+	rpi.qtr,
 	rpi.amount + rpi.interest - rpi.discount as amount,
 	case when v.objid is null then 0 else 1 end as voided
 from collectionvoucher cv 
