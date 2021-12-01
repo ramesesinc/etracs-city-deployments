@@ -102,7 +102,7 @@ where f.objid = $P{objid}
 
 
 [updateFaasList]
-update fl set 
+update fl  set 
 	fl.realpropertyid = f.realpropertyid,
 	fl.state = f.state,
 	fl.datacapture = f.datacapture,
@@ -133,13 +133,13 @@ update fl set
 	fl.yearissued = f.year,
 	fl.taskid = (select top 1 objid from faas_task where refid = f.objid and enddate is null),
 	fl.taskstate = (select top 1 state from faas_task where refid = f.objid and enddate is null),
-	fl.assignee_objid = (select top 1 assignee_objid from faas_task where refid = f.objid and enddate is null)
-from faas_list fl
+	fl.assignee_objid = (select top 1 assignee_objid from faas_task where refid = f.objid and enddate is null) 
+from faas_list fl 
 	inner join faas f on fl.objid = f.objid 
 	inner join rpu r on fl.rpuid = r.objid 
 	inner join realproperty rp on fl.realpropertyid = rp.objid 
 	left join propertyclassification pc on r.classification_objid = pc.objid 
-where fl.objid = $P{objid}	
+where fl.objid = $P{objid}     
 
 
 
