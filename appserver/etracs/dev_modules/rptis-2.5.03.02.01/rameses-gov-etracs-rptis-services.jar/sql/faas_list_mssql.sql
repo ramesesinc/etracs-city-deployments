@@ -153,3 +153,44 @@ select * from faas_list where objid  = $P{objid}
 
 [updateTaskId]
 update faas_list set taskid = $P{objid} where objid = $P{refid}
+
+
+[findFaasListForUpdate]
+select 
+	f.realpropertyid,
+	f.state,
+	f.datacapture,
+	f.tdno,
+	f.utdno,
+	f.fullpin,
+	case when r.rputype = 'land' then rp.pin else rp.pin + '-' + convert(varchar(4),r.suffix) end as pin,
+	f.prevtdno,
+	f.taxpayer_objid,
+	f.owner_name,
+	f.owner_address,
+	f.administrator_name,
+	f.administrator_address,
+	r.classification_objid,
+	pc.code,
+	rp.cadastrallotno,
+	rp.blockno,
+	rp.surveyno,
+	f.titleno,
+	r.totalareaha,
+	r.totalareasqm,
+	r.totalmv,
+	r.totalav,
+	f.effectivityyear,
+	f.effectivityqtr,
+	f.cancelreason,
+	f.cancelledbytdnos,
+	f.year,
+	(select top 1 objid from faas_task where refid = f.objid and enddate is null) as taskid,
+	(select top 1 state from faas_task where refid = f.objid and enddate is null) as taskstate,
+	(select top 1 assignee_objid from faas_task where refid = f.objid and enddate is null) as assignee_objid 
+from faas_list flx 
+	inner join faas f on flx.objid = f.objid 
+	inner join rpu r on flx.rpuid = r.objid 
+	inner join realproperty rp on flx.realpropertyid = rp.objid 
+	left join propertyclassification pc on r.classification_objid = pc.objid 
+where flx.objid = $P{objid}     

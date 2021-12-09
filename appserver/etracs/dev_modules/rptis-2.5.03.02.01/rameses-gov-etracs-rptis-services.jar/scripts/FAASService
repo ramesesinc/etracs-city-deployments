@@ -96,6 +96,9 @@ class FAASService
 	@Service('ReportParameterService')
 	def paramSvc 
 
+	@Service('FAASListUpdateService')
+	def faasListSvc
+
 	
 	def STATE_INTERIM = 'INTERIM'
 	def STATE_FORAPPROVAL = 'FORAPPROVAL'
@@ -979,7 +982,7 @@ class FAASService
 		params.cancelledmonth 	= pdate.month
 		params.cancelledday 	= pdate.day 
 		em_faas.cancelFaas(params)
-		em_faas_list.updateFaasList(params)
+		faasListSvc.update(params);
 		if (util.isTrue(params.txntype.newrpu)){
 			em_faas.cancelRpu([objid:params.rpuid])
 		}
