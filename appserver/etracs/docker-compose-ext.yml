@@ -9,3 +9,4 @@ services:
          - ../../_custom/.emptydir:/.emptydir
 
          - ./dev_modules/enterprise:/services/modules/enterprise
+         - ./dev_modules/rptis:/services/modules/rptis
