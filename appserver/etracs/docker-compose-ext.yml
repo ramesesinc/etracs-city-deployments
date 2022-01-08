@@ -7,3 +7,5 @@ services:
          ## this is only a seed mapping, please do not remove
          ## 
          - ../../_custom/.emptydir:/.emptydir
+
+         - ./dev_modules/enterprise:/services/modules/enterprise
