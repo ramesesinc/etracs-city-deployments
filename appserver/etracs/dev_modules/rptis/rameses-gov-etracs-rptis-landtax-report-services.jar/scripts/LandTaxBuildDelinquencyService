@@ -131,7 +131,7 @@ class LandTaxBuildDelinquencyService
 
 	@ProxyMethod
 	public def getLedgersForProcess( item ) {
-		return em_delinquency_foprrocess.find([barangayid:item.barangayid]).list(0,50)
+		return em_delinquency_forprocess.find([barangayid:item.barangayid]).list(0,50)
 	}		
 
 	@ProxyMethod
