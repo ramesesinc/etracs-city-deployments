@@ -1,9 +1,12 @@
 #!/bin/sh
 RUN_DIR=`pwd`
-cd ../appserver/comis
-docker-compose down
-docker system prune -f
-sleep 1
-docker-compose up -d
-docker-compose logs -f
+cd ..
+BASE_DIR=`pwd`
+
+cd $BASE_DIR/appserver/comis && docker-compose down
+
+cd $BASE_DIR/appserver/comis && docker-compose up -d
+
+cd $BASE_DIR/appserver/comis && docker-compose logs -f
+
 cd $RUN_DIR
