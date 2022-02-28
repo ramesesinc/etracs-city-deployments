@@ -81,6 +81,9 @@ class RPTLedgerService
     @DataContext('rpttaxcredit')
     def em_credit
 
+    @DataContext('faas')
+    def em_faas
+
 
     @ProxyMethod
     public void validateAndBuildManualLedger(ledger){
@@ -384,6 +387,9 @@ class RPTLedgerService
 
     @ProxyMethod
     public void checkLedgerBalance(faasid){
+        def posttoledger = util.toBoolean(var.post_approved_faas_to_ledger, true)
+        if (!posttoledger) return
+        
         def ledger = em_rptledger.find([faasid:faasid]).first() 
         if (!ledger)
             throw new Exception('Ledger does not exist or has already been deleted.')
@@ -1282,9 +1288,15 @@ class RPTLedgerService
 
         def restrictions = em_faas_restriction.select('objid').find([ledger_objid: ledger.objid, state: 'ACTIVE']).first()
         if (restrictions) {
-            ledger._messagelist = 'Ledger has active restrictions.'
+            ledger._messagelist << 'Ledger has active restrictions.'
         }
-        
+
+        if ('APPROVED'.equalsIgnoreCase(ledger.state)) {
+            def faas = em_faas.select('state').find([objid: ledger.faasid]).first()
+            if (faas && 'CANCELLED'.equalsIgnoreCase(faas.state)) {
+                ledger._messagelist << 'Associated FAAS has already been cancelled.'
+            }
+        }
         return ledger
     }
 
