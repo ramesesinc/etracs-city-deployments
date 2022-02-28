@@ -3,26 +3,26 @@
         <field name="objid" primary="true" />
         <field name="state" />
         <field name="online" type="boolean" />
-        <field name="apptype" />
-        <field name="appno" />
-        <field name="dtapplied" />
-        <field name="dtapproved" />
+        <field name="apptype" caption="App Type" indexed="true" />
+        <field name="appno" caption="App No." searchable="true" />
+        <field name="dtapplied" caption="Date Applied" />
+        <field name="dtapproved" caption="Date Approved" />
         <field name="appyear" type="integer" />
-        <field name="applicant_name" />
+        <field name="applicant_name" caption="Applicant" searchable="true" />
         <field name="applicant_address" />
-        <field name="dtexpiry" />
+        <field name="dtexpiry" caption="Expiry Date" />
         <field name="amount" type="decimal" />
         <field name="amtpaid" type="decimal" />
-        <field name="deceased_name" />
+        <field name="deceased_name" caption="Deceased" searchable="true" />
         <field name="deceased_nationality" />
         <field name="deceased_age" />
-        <field name="deceased_sex" />
+        <field name="deceased_sex" caption="Sex" />
         <field name="deceased_dtdied" />
         <field name="deceased_permissiontype" />
         <field name="deceased_causeofdeath" />
         <field name="resourceinfo_objid" />
         <field name="resourceinfo_code" />
-        <field name="resourceinfo_name" />
+        <field name="resourceinfo_name" caption="Resource" />
         <field name="resource_areasqm" type="decimal" />
         <field name="resource_length" type="decimal" />
         <field name="resource_width" type="decimal" />
