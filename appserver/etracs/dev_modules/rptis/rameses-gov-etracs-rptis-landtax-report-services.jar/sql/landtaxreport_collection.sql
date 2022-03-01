@@ -97,7 +97,8 @@ from (
 group by 
   t.classname,
   t.orderno,
-  t.special
+  t.special.
+  t.levynet
 order by t.orderno 
 
 
