@@ -33,10 +33,11 @@ services:
       - ./client/reports:/apps/server/templates
       - ../../_custom/module-client/etracs:/apps/server/templates/custom
 
-
       ## mounted patch folders
       - ./dev_modules/bpls:/services/modules/bpls
       - ./dev_modules/bpls.conf:/apps/etracs25/modules.conf.d/bpls.conf
+
+      - ./dev_modules/rptis/rameses-gov-etracs-rptis-landtax-report-services.jar:/services/modules/rptis/rameses-gov-etracs-rptis-landtax-report-services.jar
 
       - ./dev_modules/admin:/services/modules/admin
       - ./dev_modules/etracs:/services/modules/etracs
