@@ -34,6 +34,9 @@ public class BatchGRService
     @DataContext('faas_task')
     def em_faas_task
 
+    @DataContext('faas_previous')
+    def em_faas_previous
+
     @DataContext('batchgr') 
     def em_batchgr 
 
@@ -46,16 +49,33 @@ public class BatchGRService
     @DataContext('rptledger') 
     def em_rptledger
 
+    @DataContext('rysetting_land') 
+    def em_rysetting_land
+
+    @DataContext('rysetting_bldg') 
+    def em_rysetting_bldg
+
+    @DataContext('rysetting_mach') 
+    def em_rysetting_mach
+
+    @DataContext('rysetting_planttree') 
+    def em_rysetting_planttree
+
+    @DataContext('rysetting_misc') 
+    def em_rysetting_misc
+
 
     @ProxyMethod
     public def create(entity) {
+        if (entity.effectivityyear && entity.effectivityyear < entity.ry) {
+            throw new Exception("Effectivity year should be greater than or equal to " + entity.ry);
+        }
+
         entity.state = 'DRAFT'
         entity.txnno = util.getNextSequence('BATCHGR')
         def pdate = dtSvc.parseCurrentDate()
         entity.txntype = [objid: 'GR']
         entity.txndate = pdate.date
-        entity.effectivityyear = pdate.year + 1
-        entity.effectivityqtr = 4
         entity.originlgu = (entity.originlgu ?entity.originlgu : [objid: env.ORGID])
         entity.section = entity.section ? entity.section : '%'
         entity = em_batchgr.create(entity)
@@ -65,6 +85,8 @@ public class BatchGRService
         entity.classificationid = (entity.classification ? entity.classification.objid : '%')
         entity.rputype = (entity.rputype ? entity.rputype : '%')
         entity.section = (entity.section ? entity.section : '%')
+        
+        entity.prevry = getPreviousRy(entity)
         em_batchgr.insertItems(entity)
         
         def counts = getCounts(entity)
@@ -97,10 +119,15 @@ public class BatchGRService
 
     @ProxyMethod
     public void delete(entity) {
-    	deleteRevisedFaases(entity)
+        def gritems = em_batchgr_item.select('newfaasid').where('parent_objid = :objid and newfaasid is not null', entity)
+                        .orderBy("pin, suffix DESC")
+
         em_batchgr_item.find([parent_objid: entity.objid]).delete()
         em_task.find([refid: entity.objid]).delete()
+        txnRefSvc.delete(entity.objid)
         em_batchgr.delete(entity)
+
+    	deleteRevisedFaases(entity, gritems)
     }
 
     @ProxyMethod
@@ -181,12 +208,16 @@ public class BatchGRService
             em_batchgr_item.update(batchitem)
         } 
         else if (olditem.state.matches('FORREVISION|ERROR')) {
+            if (checkReconcileRevisedFaas(batchitem)) return info;
+
             try {
             	txnRefSvc.deleteByObjid(entity.objid, batchitem.objid)
 
                 def params = [:]
                 params.faas = [objid: batchitem.objid]
                 params.newry = entity.ry 
+                params.effectivityyear = entity.effectivityyear
+                params.effectivityqtr = entity.effectivityqtr
                 params.datacapture = true 
                 params.batchgr = entity 
                 def grfaas = svc.createOnlineGeneralRevision(params)
@@ -208,9 +239,34 @@ public class BatchGRService
         return info 
     }
 
+    def checkReconcileRevisedFaas(batchitem) {
+        def prevfaas = em_faas_previous.find([prevfaasid: batchitem.objid]).first();
+        if (!prevfaas) return false;
+
+        def grfaas = em_faas.select('objid,state,tdno,fullpin').find([objid: prevfaas.faasid]).first();
+        if (grfaas && 'PENDING'.equalsIgnoreCase(grfaas.state)) {
+            batchitem.state = 'REVISED'
+            batchitem.error = null 
+            batchitem.newfaasid = grfaas.objid 
+            batchitem.newfaas = [objid: grfaas.objid, tdno: grfaas.tdno, fullpin: grfaas.fullpin]
+            em_batchgr_item.update(batchitem)
+            return true;
+        }
+        return false;
+    }
+
     @ProxyMethod
     public def getItems(entity) {
-        return em_batchgr_item.find([parent_objid: entity.objid])
+        def findby = [parent_objid: entity.objid];
+        
+        if (entity._query) {
+            def query = entity._query;
+            if (query.landpin) findby.pin = query.landpin.pin;
+            if (query.rputype) findby.rputype = query.rputype;
+            if (query.state) findby.state = query.state;
+        }
+
+        return em_batchgr_item.find(findby)
                 .orderBy('pin,suffix,subsuffix')
                 .list()
     }
@@ -322,7 +378,7 @@ public class BatchGRService
 
         def items = [];
         if (item.rputype == 'land') {
-            items = em_batchgr_item.find([parent_objid: item.parent.objid, pin: item.pin]).list()
+            items = em_batchgr_item.find([parent_objid: item.parent.objid, pin: item.pin]).orderBy('suffix desc').list()
         } else {
             items = em_batchgr_item.find([objid: item.objid]).list()
         }
@@ -331,8 +387,23 @@ public class BatchGRService
 
     @ProxyMethod
     public def getCounts(entity){
-        def cnt = em_batchgr.findCounts(entity)
+        def findby = [:];
+        findby.objid = entity.objid;
+        findby.pin = '%'
+        findby.rputype = '%'
+        findby.state = '%'
+        
+        if (entity._query) {
+            def query = entity._query;
+            if (query.landpin) findby.pin = query.landpin.pin;
+            if (query.rputype) findby.rputype = query.rputype;
+            if (query.state) findby.state = query.state;
+        }
+
+        def cnt = em_batchgr.findCounts(findby)
         if (cnt.count == null) {
+            cnt.land = 0
+            cnt.improvement = 0
             cnt.count = 0
             cnt.revised = 0
             cnt.currentcnt = 0
@@ -375,14 +446,10 @@ public class BatchGRService
         faasSvc.updateTdNoByRecord(faas)
     }   
 
-    void deleteRevisedFaases(entity) {
-    	em_batchgr_item.where('parent_objid = :objid and newfaasid is not null', entity)
-            .orderBy("pin, suffix DESC")
-    		.list().each {
-    			faasSvc.deleteFaasById(it.newfaasid)
-    		}
-
-        txnRefSvc.delete(entity.objid);
+    void deleteRevisedFaases(entity, gritems) {
+    	gritems.each {
+            faasSvc.deleteFaasById(it.newfaasid)
+        }
     }
 
     void createItemsTxnRef(entity) {
@@ -394,21 +461,38 @@ public class BatchGRService
     void excludeFaases(items) {
     	items.each {
     		if (it.newfaasid) {
-    			def updateInfo = [state: 'INTERIM']
-    			em_faas.find([objid: it.newfaasid]).update(updateInfo)
-
-    			em_batchgr.insertFaasSignatories(it)
-
-    			def currTask = em_faas_task.where('refid = :newfaasid and enddate is null', it).first()
-    			updateInfo.taskid = currTask?.objid
-    			updateInfo.taskstate = currTask?.state
-    			updateInfo.assignee = currTask?.assignee
-
-    			em_faas_list.find([objid: it.newfaasid]).update(updateInfo)
+                faasSvc.deleteFaasById(it.newfaasid)
     		}
     		em_batchgr_item.delete(it)
             txnRefSvc.deleteByObjid(it.parent.objid, it.objid)
     	}
-    	
+    }
+
+    def getPreviousRy(entity) {
+        def prevry  = null;
+        if (entity.rputype == 'land') 
+            prevry = em_rysetting_land.where('ry < :ry', entity).orderBy('ry desc').first()
+        else if (entity.rputype == 'bldg') 
+            prevry = em_rysetting_bldg.where('ry < :ry', entity).orderBy('ry desc').first()
+        else if (entity.rputype == 'mach') 
+            prevry = em_rysetting_mach.where('ry < :ry', entity).orderBy('ry desc').first()
+        else if (entity.rputype == 'planttree') 
+            prevry = em_rysetting_planttree.where('ry < :ry', entity).orderBy('ry desc').first()
+        else if (entity.rputype == 'misc') 
+            prevry = em_rysetting_misc.where('ry < :ry', entity).orderBy('ry desc').first()
+        else 
+            prevry = em_rysetting_land.where('ry < :ry', entity).orderBy('ry desc').first()
+
+        def kinds = [
+            land: 'Land', 
+            bldg: 'Building', 
+            mach: 'Machinery', 
+            planttree: 'Plant/Tree', 
+            misc: 'Miscellaneous'
+        ]
+
+        def kind = kinds[entity.rputype] ? kinds[entity.rputype] : 'Land'
+        if (!prevry) throw new Exception('Previous revision year setting for ' + kind + ' does not exist')
+        return prevry.ry 
     }
 }
