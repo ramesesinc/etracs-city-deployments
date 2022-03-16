@@ -73,9 +73,6 @@ class RPTCertificationService
 
 	@ProxyMethod
 	public def createCertification( cert ) {
-		if (!cert.objid) {
-			cert.objid = 'C' + new java.rmi.server.UID()
-		}
 		if (!cert.txnno){
 			if (cert.online) {
 				cert.txnno = 'TMP-' + getNextSequence(TEMP_KEY)
@@ -121,7 +118,6 @@ class RPTCertificationService
 	@ProxyMethod
 	public def openCertification(param) {
 		def objid = (param instanceof Map ? param.objid : param);
-		println 'openCertification: ' + objid;
 		def cert = em.read(SCHEMA_NAME, [objid:objid])
 		if (!cert) throw new Exception('Record does not exist or has already been deleted.')
 		cert.taxpayerid = cert.taxpayer?.objid

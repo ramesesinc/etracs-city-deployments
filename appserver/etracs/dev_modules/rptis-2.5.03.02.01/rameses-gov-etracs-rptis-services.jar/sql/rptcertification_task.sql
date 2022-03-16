@@ -11,3 +11,10 @@ UPDATE faas_task SET
 	assignee_name = $P{assigneename},
 	assignee_title = $P{assigneetitle}
 WHERE objid = $P{objid}
+
+[findReturnToInfo]
+select *
+from rptcertification_task
+where refid = $P{refid}
+  and state = $P{state}
+order by startdate desc 

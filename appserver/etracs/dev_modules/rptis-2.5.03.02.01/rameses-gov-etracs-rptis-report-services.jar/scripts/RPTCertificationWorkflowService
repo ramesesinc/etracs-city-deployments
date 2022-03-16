@@ -172,5 +172,10 @@ class RPTCertificationWorkflowService extends ActiveWorkflowService
             data 	  : [taskid: target.taskid],
         ]
 	}
+
+	@ProxyMethod
+	public def findReturnToInfo( param ) {
+		return taskDB.findReturnToInfo(param)	
+	}
 }
 
