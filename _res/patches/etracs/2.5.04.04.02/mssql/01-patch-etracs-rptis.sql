@@ -36,3 +36,78 @@ INSERT INTO sys_wf_transition (parentid, processname, [action], [to], idx, eval,
 go
 INSERT INTO sys_wf_transition (parentid, processname, [action], [to], idx, eval, properties, permission, caption, ui) VALUES ('approver', 'rptcertification', 'submit', 'approved', '16', NULL, '[caption:''Approve'', confirm:''Approve?'', messagehandler:''rptmessage:sign'']', NULL, 'Approve', '[size:[75,0],pos:[722,162],type:''arrow'',points:[722,162,797,162]]')
 go
+
+
+
+CREATE TABLE rptcertification_task (
+  objid varchar(50) NOT NULL DEFAULT '',
+  refid varchar(50) DEFAULT NULL,
+  parentprocessid varchar(50) DEFAULT NULL,
+  [state] varchar(50) DEFAULT NULL,
+  startdate datetime DEFAULT NULL,
+  enddate datetime DEFAULT NULL,
+  assignee_objid varchar(50) DEFAULT NULL,
+  assignee_name varchar(100) DEFAULT NULL,
+  assignee_title varchar(80) DEFAULT NULL,
+  actor_objid varchar(50) DEFAULT NULL,
+  actor_name varchar(100) DEFAULT NULL,
+  actor_title varchar(80) DEFAULT NULL,
+  [message] varchar(255) DEFAULT NULL,
+  [signature] text,
+  returnedby varchar(100) DEFAULT NULL,
+  PRIMARY KEY (objid)
+  
+) 
+go 
+
+create index ix_refid on rptcertification_task (refid)
+go 
+create index ix_assignee_objid on rptcertification_task (assignee_objid)
+go 
+alter table rptcertification_task add CONSTRAINT fk_rptcertification_task FOREIGN KEY (refid) REFERENCES rptcertification (objid)
+go
+
+
+
+alter table rptcertification add taskid varchar(50)
+go 
+
+
+if exists(select * from sysobjects where id = OBJECT_ID('vw_online_rptcertification')) 
+begin
+  drop view vw_online_rptcertification
+end 
+go 
+
+create view vw_online_rptcertification
+as 
+select
+	c.objid,
+	c.txnno,
+	c.txndate,
+	c.opener,
+	c.taxpayer_objid,
+	c.taxpayer_name,
+	c.taxpayer_address,
+	c.requestedby,
+	c.requestedbyaddress,
+	c.certifiedby,
+	c.certifiedbytitle,
+	c.official,
+	c.purpose,
+	c.orno,
+	c.ordate,
+	c.oramount,
+	c.taskid,
+	t.state as task_state,
+	t.startdate as task_startdate,
+	t.enddate as task_enddate,
+	t.assignee_objid as task_assignee_objid,
+	t.assignee_name as task_assignee_name,
+	t.actor_objid as task_actor_objid,
+	t.actor_name as task_actor_name
+from rptcertification c
+inner join rptcertification_task t on c.taskid = t.objid
+go 
+
+

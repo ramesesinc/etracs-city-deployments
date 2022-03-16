@@ -121,6 +121,7 @@ class RPTCertificationService
 	@ProxyMethod
 	public def openCertification(param) {
 		def objid = (param instanceof Map ? param.objid : param);
+		println 'openCertification: ' + objid;
 		def cert = em.read(SCHEMA_NAME, [objid:objid])
 		if (!cert) throw new Exception('Record does not exist or has already been deleted.')
 		cert.taxpayerid = cert.taxpayer?.objid
