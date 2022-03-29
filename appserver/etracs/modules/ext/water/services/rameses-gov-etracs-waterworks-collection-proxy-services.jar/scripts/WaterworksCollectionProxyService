@@ -7,6 +7,6 @@ class WaterworksCollectionProxyService {
 
 	@ProxyMethod 
 	public def getInfo( params ) { 	
-		return billingSvc.getBillingInfo( params ); 
+		return billingSvc.getInfo( params ); 
 	} 
 }
