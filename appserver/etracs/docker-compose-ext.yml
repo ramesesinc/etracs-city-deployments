@@ -10,3 +10,5 @@ services:
 
          - ./dev_modules/enterprise:/services/modules/enterprise
          - ./dev_modules/rptis:/services/modules/rptis
+
+         - ../../_custom/lov/CITIZENSHIP:/services/modules/enterprise/rameses-enterprise-services.jar/lov/CITIZENSHIP
