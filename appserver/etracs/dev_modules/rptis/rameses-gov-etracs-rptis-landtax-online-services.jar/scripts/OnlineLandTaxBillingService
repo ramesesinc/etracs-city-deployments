@@ -1,34 +1,59 @@
-import com.rameses.annotations.* 
-import com.rameses.services.extended.*
+import com.rameses.annotations.*;
+import com.rameses.services.extended.*;
 
 class OnlineLandTaxBillingService 
 {
 	@Env
 	def env 
 
-	@Service('RPTBillingService')
+	@Service( dynamic=true )
+    def dynaSvc; 
+
+    @DataContext( dynamic=true )
+    def dynaEm; 
+   
+    @Service('RPTBillingService')
     def billSvc
 
     @Service('RPTLedgerPostPaymentService')
     def postPaymentSvc
 
-    @Service('RPTReceiptShareService')
-    def shareSvc;
-
     def BARCODE_PREFIX = '56001:'
 
 	@ProxyMethod
 	public def verifyPayment( eor ) {
+        boolean allow_rebuild = eor.allow_rebuild.toString().matches('true|1');
+
         def data = eor.info.data;
-        def bill = generateBill([refno: data.billno])
-        eor.ledgers = [bill.rptledger]
-        eor.rptledger = bill.rptledger 
+        def billparam = [:];
+        billparam._txntype = "FILIPIZEN";
+        billparam.refno = data.billno;
+        billparam.billdate = eor.tracedate;
+        billparam.billtoyear = data.billtoyear;
+        billparam.billtoqtr = data.billtoqtr;
+        billparam.allow_rebuild = allow_rebuild;
+        def bill = generateBill( billparam );
+
+        println '\n===> eor.amount = '+ eor.amount +',  bill.rptledger.total = '+ bill.rptledger.total; 
+        if (eor.amount != bill.rptledger.total) {
+            //apply as partial payment
+            println '===> execute applyPartialPayment';
+            bill.partial = [amount: eor.amount];
+            bill.rptledger = receiptSvc.applyPartialPayment(bill);
+        }
+
+        eor.ledgers = [bill.rptledger];
+        eor.rptledger = bill.rptledger;
+
+        def item_total = bill.rptledger.billitems.sum{( it.amount ? it.amount : 0.0 )}
+        println '\n===> eor.amount = '+ eor.amount +',  bill.rptledger.total = '+ bill.rptledger.total + ',  bill.rptledger.billitems total = '+ item_total; 
+
         return [
-            sharing: true, 
+            sharing: true,         
             ledgers: [bill.rptledger],
             rptledger: bill.rptledger,
             amount: eor.amount,
-            items: bill.rptledger.billitems 
+            items: bill.rptledger.billitems,
         ];
 	}
 
@@ -44,34 +69,43 @@ class OnlineLandTaxBillingService
     
     @ProxyMethod
 	public def getEmailAttachments( eor ) {
-        return []
+        return [];
     }
-
 
     @ProxyMethod
     public def generateShares( param ) { 
+        def shareSvc = dynaSvc.lookup('RPTReceiptShareService'); 
         return shareSvc.generateShares( param ); 
+    } 
+
+    @ProxyMethod
+    public void revertPayment( eor ) { 
+        def receiptSvc = dynaSvc.lookup('RPTReceiptService'); 
+        receiptSvc.voidReceipt( eor ); 
     } 
 
 
     def generateBill(params){
-        def bill = [:]
-        if (!env.ORGID) env.ORGID = params.orgcode 
+        def bill = [:];
+        if (!env.ORGID) env.ORGID = params.orgcode;
 
         if (params.refno.startsWith(BARCODE_PREFIX)){
-            params.barcodeid = params.refno 
-            bill = billSvc.getBillByBarcode(params)
-            bill._forpayment = true
-            bill = billSvc.generateBill(bill)
+            params.barcodeid = params.refno;
+            bill = billSvc.getBillByBarcode(params);
+            if (params.billdate) bill.billdate = params.billdate;
+            if (params.billtoyear) bill.billtoyear = toInt(params.billtoyear);
+            if (params.billtoqtr) bill.billtoqtr = toInt(params.billtoqtr);
+            bill._forpayment = true;
+            bill = billSvc.generateBill(bill);
         }
         else{
-            params.tdno = params.refno 
-            if (params.billtoyear) params.billtoyear = toInt(params.billtoyear)
-            if (params.billtoqtr) params.billtoqtr = toInt(params.billtoqtr)
-            bill = billSvc.generateBillByTdNo(params)
+            params.tdno = params.refno;
+            if (params.billtoyear) params.billtoyear = toInt(params.billtoyear);
+            if (params.billtoqtr) params.billtoqtr = toInt(params.billtoqtr);
+            bill = billSvc.generateBillByTdNo(params);
         }
-        bill.rptledger = bill.remove('ledgers')[0]
-        return bill 
+        bill.rptledger = bill.remove('ledgers')[0];
+        return bill;
     }
 
 
