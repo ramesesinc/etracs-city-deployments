@@ -8,7 +8,16 @@ services:
          ## 
          - ../../_custom/.emptydir:/.emptydir
 
-         - ./dev_modules/enterprise:/services/modules/enterprise
-         - ./dev_modules/rptis:/services/modules/rptis
-
+         ## mounted lov files
+         ## 
          - ../../_custom/lov/CITIZENSHIP:/services/modules/enterprise/rameses-enterprise-services.jar/lov/CITIZENSHIP
+
+         ## plugins
+         ## 
+         - ../../plugin/ctc/server:/apps/etracs25/modules/ext/ctc
+         - ../../plugin/market/server:/apps/etracs25/modules/ext/market
+         - ../../plugin/ovs/server:/apps/etracs25/modules/ext/ovs
+
+         ## mounted rptis folder 
+         ## 
+         - ./dev_modules/rptis:/services/modules/rptis
