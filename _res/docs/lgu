@@ -5,7 +5,7 @@ Pass: cpdo2121
 
 
 [DB Access]
-IP   : 192.168.1.100
+IP   : 192.168.1.101
 User : root
 Pass : etr"cs25
 
