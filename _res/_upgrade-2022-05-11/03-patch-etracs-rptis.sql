@@ -9279,3 +9279,38 @@ INSERT INTO `sys_wf_transition` (`parentid`, `processname`, `action`, `to`, `idx
 INSERT INTO `sys_wf_transition` (`parentid`, `processname`, `action`, `to`, `idx`, `eval`, `properties`, `permission`, `caption`, `ui`) VALUES ('approver', 'subdivision', 'return_appraiser', 'appraiser', '84', NULL, '[caption:\'Return to Appraiser\',confirm:\'Return to Appraiser?\', messagehandler:\'default\']', 'APPROVER', NULL, NULL);
 INSERT INTO `sys_wf_transition` (`parentid`, `processname`, `action`, `to`, `idx`, `eval`, `properties`, `permission`, `caption`, `ui`) VALUES ('cityapprover', 'subdivision', 'backapprover', 'approver', '85', NULL, '[caption:\'Cancel Posting\', confirm:\'Cancel posting record?\']', 'APPROVER', NULL, NULL);
 INSERT INTO `sys_wf_transition` (`parentid`, `processname`, `action`, `to`, `idx`, `eval`, `properties`, `permission`, `caption`, `ui`) VALUES ('cityapprover', 'subdivision', 'completed', 'end', '95', NULL, '[caption:\'Approved\', visible:false]', 'APPROVER', NULL, NULL);
+
+
+drop table if exists brgyshareitem;
+drop table if exists brgyshare;
+drop table if exists brgy_taxaccount_mapping;
+drop table if exists brgyshare_account_mapping;
+drop table if exists faasupdate;
+drop table if exists landtax_lgu_account_mapping;
+drop table if exists mcsettlement_affectedrpu;
+drop table if exists mcsettlement_otherclaim;
+drop table if exists mcsettlement;
+drop table if exists municipality_taxaccount_mapping;
+drop table if exists previousfaas;
+drop table if exists province_taxaccount_mapping;
+drop table if exists rpt_syncdata_completed;
+drop table if exists rpt_syncdata_item_completed;
+drop table if exists rptledger_compromise_credit;
+drop table if exists rptledger_compromise_item_credit;
+drop table if exists rptledger_compromise_installment;
+drop table if exists rptledger_compromise_item;
+drop table if exists rptledger_compromise;
+drop table if exists rptledger_forprocess;
+drop table if exists rptledger_payment_item;
+drop table if exists rptledger_payment_share;
+drop table if exists rptledger_payment;
+drop table if exists rptledgeritem_qtrly;
+drop table if exists rptledgeritem;
+drop table if exists rptreceipt_capture;
+drop table if exists rptvariable;
+drop table if exists syncdata_forprocess;
+drop table if exists syncdata_forsync;
+drop table if exists syncdata_item;
+drop table if exists syncdata_offline_org;
+drop table if exists syncdata_pending;
+drop table if exists syncdata;
