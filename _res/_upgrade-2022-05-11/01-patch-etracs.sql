@@ -1,3 +1,6 @@
+use etracs255_dapitan;
+
+
 -- ## 2020-03-16
 
 RENAME TABLE `account_incometarget` TO `z20200316_account_incometarget`
