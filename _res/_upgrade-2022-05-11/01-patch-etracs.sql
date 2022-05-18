@@ -3555,3 +3555,12 @@ from remittance r
   inner join itemaccount ia on ia.objid = cs.payableitem_objid
   left join cashreceipt_void v on v.receiptid = c.objid 
 ;
+
+
+
+-- ## 2022-05-18 LGU specific 
+
+update sys_rule set name='BARANGAY_CLEARANCE_SANTO_NINO_INFO' where objid = 'RUL-20903258:16f166d029d:-3fef'
+;
+update sys_rule set name='BARANGAY_CLEARANCE_STO._NINO' where objid = 'RUL1a746e9f:16f1bab7320:-5a94'
+;
