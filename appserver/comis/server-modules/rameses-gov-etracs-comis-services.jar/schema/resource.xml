@@ -1,8 +1,9 @@
 <schema>
     <element tablename="resource">
-        <field name="objid" primary="true" prefix="R"/>
+        <field name="objid" primary="true" prefix="R" />
         <field name="state" required="true" caption="State" searchable="true" defaultValue="DRAFT" />
         <field name="code" required="true" caption="Code" searchable="true" />
         <field name="name" required="true" caption="Resource" searchable="true" />
+        <field name="allowmultiple" required="true" caption="Multiple?" searchable="true" />
     </element>
 </schema>

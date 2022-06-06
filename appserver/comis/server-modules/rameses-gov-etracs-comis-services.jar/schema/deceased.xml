@@ -2,9 +2,9 @@
     <element tablename="deceased">
         <field name="objid" primary="true" prefix="D" />
         <field name="state" caption="State" required="true" searchable="true" />
-        <field name="name" caption="Deceased" searchable="true" />
+        <field name="name" caption="Deceased" searchable="true" width="250"/>
         <field name="address" caption="Address" />
-        <field name="lgu" caption="LGU" />
+        <field name="lgu_objid" caption="LGU" />
         <field name="nationality" caption="Nationality" />
         <field name="age" caption="Age" type="integer" />
         <!-- day, month, year -->
@@ -12,13 +12,24 @@
         <field name="ageinmon" type="integer" />
         <field name="sex" caption="Sex" />
         <field name="dtdied" caption="Date of Death" type="date" />
-        <field name="placeofdeath" caption="Place of Death" />
-        <field name="placeofburial" caption="Place of Burial" />
+        <field name="placeofdeath_objid" caption="Place of Death" />
+        <field name="placeofburial_objid" caption="Place of Burial" />
+        <field name="cemetery_name" caption="Cemetery" />
+        <field name="cemetery_address" caption="Address" />
         <!-- INTER, DISINTER, REMOVE -->
         <field name="permissiontype" caption="Permission" />
-        <field name="infectious"  />
-        <field name="embalmed"  />
+        <field name="infectious" />
+        <field name="embalmed" />
         <field name="disposition" />
+        <complex name="lgu" ref="lgu" jointype="many-to-one" required="false">
+            <key field="lgu_objid" target="objid" />
+        </complex>
+        <complex name="placeofdeath" ref="lgu" jointype="many-to-one" required="false">
+            <key field="placeofdeath_objid" target="objid" />
+        </complex>
+        <complex name="placeofburial" ref="lgu" jointype="many-to-one" required="false">
+            <key field="placeofburial_objid" target="objid" />
+        </complex>
         <complex name="causeofdeath" ref="causeofdeath" jointype="many-to-one" required="false">
             <key field="causeofdeath_objid" target="objid" />
         </complex>

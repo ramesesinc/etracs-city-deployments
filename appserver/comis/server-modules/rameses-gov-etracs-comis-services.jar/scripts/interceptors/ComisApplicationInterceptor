@@ -27,6 +27,12 @@ class ComisApplicationInterceptor {
 	@DataContext('cemetery_resource')
     def em_cem_resource;
 
+	@Before(pattern="PersistenceService.update", eval="#{args[0]._schemaname=='application'}") 
+	public void beforeUpdate( evt ) {
+		def app = evt.args[0];
+		ruleSvc.assess(app);
+	}
+
 	@After(pattern="PersistenceService.update", eval="#{args[0]._schemaname=='application'}") 
 	public void afterUpdate( evt ) {
 		def app = evt.args[0];

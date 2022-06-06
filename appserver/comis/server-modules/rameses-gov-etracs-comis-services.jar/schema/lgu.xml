@@ -1,6 +1,8 @@
 <schema>
 	<element tablename="lgu">
-		<field name="objid" primary="true"  prefix="LGU" />
+		<field name="objid" primary="true" prefix="LGU" />
+		<field name="name" required="true" caption="LGU" />
+		<field name="islocal" type="boolean" default="0" required="true" caption="Local?" />
 	</element>
 </schema>
 		

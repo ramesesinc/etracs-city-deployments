@@ -3,6 +3,8 @@ import com.rameses.common.*;
 import com.rameses.services.extended.*
 
 class ComisDeceasedInterceptor {
+	@DataContext('application')
+	def em_app;
 	
 	@Before(pattern="PersistenceService.create", eval="#{args[0]._schemaname=='deceased'}") 
 	public void beforeCreate( evt ) {
@@ -14,6 +16,18 @@ class ComisDeceasedInterceptor {
 	public void beforeUpdate( evt ) {
 		def deceased = evt.args[0];
 		updateAgeInfo(deceased);
+	}
+
+	@Before(pattern="PersistenceService.removeEntity", eval="#{args[0]._schemaname=='deceased'}") 
+	public void beforeDelete( evt ) {
+		def entity = evt.args[0]
+		def app = em_app.select('objid,appno').find([deceased_objid: entity.objid]).first()
+		if (app) {
+			def msg = 'Record cannot be deleted. It is currently referenced by Application No. ' + app.appno + '.\n'
+			msg += 'Delete the associated application instead.'
+			throw new Exception(msg)
+		}
+		println 'before delete => ' + entity;
 	}
 
 	void updateAgeInfo(deceased) {

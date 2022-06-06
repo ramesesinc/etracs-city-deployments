@@ -2,6 +2,9 @@ import com.rameses.annotations.*
 import com.rameses.services.extended.*
 
 class ComisDeceasedPersonService {
+    @DataContext('deceased')
+    def em_deceased;
+
     @DataContext('causeofdeath')
     def em_causeofdeath;
     
@@ -24,7 +27,14 @@ class ComisDeceasedPersonService {
 
     @ProxyMethod
     public def getLgus() {
-        return em_lgu.where("1=1").orderBy("objid").list().objid;
+        return em_lgu.where("1=1").orderBy("objid").list();
+    }
+
+    @ProxyMethod
+    public def approve(entity) {
+        entity.state = 'APPROVED'
+        em_deceased.find([objid: entity.objid]).update([state: entity.state])
+        return entity
     }
 
 }
