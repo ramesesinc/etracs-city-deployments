@@ -63,9 +63,66 @@ go
 
 
 
+
+/* ALLOWMULTIPLE SUPPORT */
+
 alter table resource add allowmultiple int default 0
 go 
 
 update resource set allowmultiple = case when name = 'OSSUARY' then 1 else 0 end 
+go 
+
+
+if exists(select * from sysobjects where id = object_id('vw_cemetery_resource'))
+begin 
+	DROP VIEW vw_cemetery_resource 
+end
+go
+
+CREATE VIEW vw_cemetery_resource 
+AS 
+select 
+  sri.objid AS objid,
+  sri.parentid AS parentid,
+  sr.parentid AS blockid,
+  sr.code AS code,
+  sr.name AS name,
+  sr.currentinfoid AS currentinfoid,
+  sr.currentappid AS currentappid,
+  sri.state AS state,
+  sri.areasqm AS areasqm,
+  sri.resource_objid AS resource_objid,
+  sri.ui AS ui,
+  r.name AS resource_name,
+  r.allowmultiple as resource_allowmultiple,
+  b.objid AS block_objid,
+  b.code AS block_code,
+  b.name AS block_name,
+  s.objid AS section_objid,
+  s.code AS section_code,
+  s.name AS section_name,
+  a.appno AS appno,
+  a.apptype AS apptype,
+  a.applicant_name AS applicant_name,
+  a.applicant_address AS applicant_address,
+  d.name AS deceased_name,
+  d.nationality AS deceased_nationality,
+  d.sex AS deceased_sex,
+  d.age AS deceased_age,
+  cd.title AS deceased_causeofdeath,
+  c.objid AS cemetery_objid,
+  c.code AS cemetery_code,
+  c.name AS cemetery_name,
+  c.location AS cemetery_location,
+  c.isnew AS cemetery_isnew 
+from  cemetery_section_block_resource sr 
+join cemetery_section_block_resource_info sri on sr.currentinfoid = sri.objid  
+join resource r on sri.resource_objid = r.objid  
+join cemetery_section_block b on sr.parentid = b.objid  
+join cemetery_section s on b.parentid = s.objid  
+join cemetery c on s.parentid = c.objid  left 
+join application a on sr.currentappid = a.objid  left 
+join deceased d on a.deceased_objid = d.objid  left 
+join causeofdeath cd on d.causeofdeath_objid = cd.objid 
 go 
 
