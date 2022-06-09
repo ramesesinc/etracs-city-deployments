@@ -55,6 +55,8 @@ alter table deceased add cemetery_address nvarchar(100)
 ;
 
 
+INSERT INTO sys_var (name, value, description, datatype, category) VALUES ('COMIS_LESSOR_CTC_DTISSUED', '<<DATE ISSUED>>', NULL, NULL, 'COMIS');
+INSERT INTO sys_var (name, value, description, datatype, category) VALUES ('COMIS_LESSOR_CTC_NO', '<<CTCNO>>', NULL, NULL, 'COMIS');
 
 
 /* ALLOWMULTIPLE SUPPORT */
@@ -116,3 +118,30 @@ join deceased d on a.deceased_objid = d.objid  left
 join causeofdeath cd on d.causeofdeath_objid = cd.objid 
 ;
 
+
+
+/* INTERMENT ORDER */
+CREATE TABLE `interment_order` (
+  `objid` varchar(50) NOT NULL,
+  `state` varchar(25) NOT NULL,
+  `appid` varchar(50) NOT NULL,
+  `txnno` varchar(25) NOT NULL,
+  `txndate` datetime NOT NULL,
+  `dtapproved` date DEFAULT NULL,
+  `approvedby_name` varchar(150) DEFAULT NULL,
+  `approvedby_title` varchar(50) DEFAULT NULL,
+  `intermentdate` date NOT NULL,
+  `intermenttime` varchar(10) NOT NULL,
+  `regofficer_name` varchar(150) NOT NULL,
+  `regofficer_title` varchar(50) NOT NULL,
+  `undertaker_name` varchar(150) NOT NULL,
+  `undertaker_title` varchar(50) NOT NULL,
+  `createdby_name` varchar(150) NOT NULL,
+  `createdby_title` varchar(50) NOT NULL,
+  PRIMARY KEY (`objid`),
+  UNIQUE KEY `ux_appid` (`appid`),
+  KEY `ix_state` (`state`),
+  KEY `ix_txnno` (`txnno`),
+  CONSTRAINT `fk_intermentorder_application` FOREIGN KEY (`appid`) REFERENCES `application` (`objid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+;

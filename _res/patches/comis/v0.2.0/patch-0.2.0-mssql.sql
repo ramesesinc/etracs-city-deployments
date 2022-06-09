@@ -132,3 +132,42 @@ join deceased d on a.deceased_objid = d.objid  left
 join causeofdeath cd on d.causeofdeath_objid = cd.objid 
 go 
 
+
+INSERT INTO sys_var (name, value, description, datatype, category) VALUES ('COMIS_LESSOR_CTC_DTISSUED', '<<DATE ISSUED>>', NULL, NULL, 'COMIS')
+go
+INSERT INTO sys_var (name, value, description, datatype, category) VALUES ('COMIS_LESSOR_CTC_NO', '<<CTCNO>>', NULL, NULL, 'COMIS')
+go 
+
+
+/* INTERMENT ORDER */
+CREATE TABLE interment_order (
+  objid nvarchar(50) NOT NULL,
+  state nvarchar(25) NOT NULL,
+  appid nvarchar(50) NOT NULL,
+  txnno nvarchar(25) NOT NULL,
+  txndate datetime NOT NULL,
+  dtapproved date DEFAULT NULL,
+  approvedby_name nvarchar(150) DEFAULT NULL,
+  approvedby_title nvarchar(50) DEFAULT NULL,
+  intermentdate date NOT NULL,
+  intermenttime nvarchar(10) NOT NULL,
+  regofficer_name nvarchar(150) NOT NULL,
+  regofficer_title nvarchar(50) NOT NULL,
+  undertaker_name nvarchar(150) NOT NULL,
+  undertaker_title nvarchar(50) NOT NULL,
+  createdby_name nvarchar(150) NOT NULL,
+  createdby_title nvarchar(50) NOT NULL,
+  PRIMARY KEY (objid)
+) 
+go 
+
+create unique index ux_appid on interment_order (appid)
+go 
+create index ix_state on interment_order (state)
+go 
+create index ix_txnno on interment_order (txnno)
+go 
+
+alter table interment_order 
+  add CONSTRAINT fk_intermentorder_application FOREIGN KEY (appid) REFERENCES application (objid)
+go 

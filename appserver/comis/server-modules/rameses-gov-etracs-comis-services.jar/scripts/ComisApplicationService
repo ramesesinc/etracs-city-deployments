@@ -5,13 +5,16 @@ class ComisApplicationService {
     @Env 
     def env;
     
+    @Service('Var')
+    def var;
+    
     @Service('DateService')
     def dtSvc;
 
     @Service('SequenceService')
     def seqSvc;
 
-    @Service('ReportParameterService')
+    @Service(value='ReportParameterService', connection="etracs")
     def reportSvc;
 
     @Service('ComisApplicationRuleService')
@@ -258,7 +261,9 @@ class ComisApplicationService {
         app.lessor = [:];
         app.lessor.name = params.MAYORNAME;
         app.lessor.title = params.MAYORTITLE;
-        app.lessor.ctcplaceissued = params.LGUADDRESS;
+        def placeissued = var.get('COMIS_LESSOR_CTC_PLACEISSUED');
+        app.lessor.ctcplaceissued = placeissued ? placeissued : params.LGUADDRESS
+        app.lessor.ctcno = var.get('COMIS_LESSOR_CTC_NO')
     }
 
     
