@@ -6,5 +6,10 @@
         <field name="name" required="true" caption="Cemetery" searchable="true" />
         <field name="location" required="true" caption="Location" />
         <field name="isnew" required="true" type="boolean" caption="Is New?" />
+        <field name="isoutsidelgu" required="true" type="boolean" caption="Outside LGU?" />
+        <field name="lgu_objid" caption="LGU" />
+        <complex name="lgu" ref="lgu" jointype="many-to-one" required="false">
+            <key field="lgu_objid" target="objid" />
+        </complex>
     </element>
 </schema>

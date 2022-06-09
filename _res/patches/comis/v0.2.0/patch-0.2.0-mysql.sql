@@ -11,6 +11,13 @@ update lgu set
 
 alter table cemetery add isoutsidelgu int default 0
 ;
+alter table cemetery add lgu_objid varchar(50)
+;
+update cemetery c, lgu l set 
+  c.lgu_objid = l.objid 
+where l.islocal = 1
+;
+
 
 
 alter table deceased change column lgu lgu_objid varchar(50)

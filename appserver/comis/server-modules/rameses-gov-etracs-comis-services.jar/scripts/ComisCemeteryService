@@ -20,6 +20,9 @@ class ComisCemeteryService {
     @DataContext('vw_cemetery_resource')
     def vw_cem_resource;
 
+    @DataContext('lgu')
+    def em_lgu;
+
 
     def DRAFT_STATE = 'DRAFT';
     def ACTIVE_STATE = 'ACTIVE';
@@ -92,5 +95,11 @@ class ComisCemeteryService {
         em_cem_resourceinfo.find([objid: resource.currentinfoid]).update([state: resource.state])
         return resource;
     }
+
+    @ProxyMethod
+    public def getLgus() {
+        return em_lgu.where('1=1').orderBy('name').list();
+    }
+
 
 }

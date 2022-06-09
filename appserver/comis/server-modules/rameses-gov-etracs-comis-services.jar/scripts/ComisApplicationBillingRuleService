@@ -28,6 +28,7 @@ public class ComisApplicationBillingRuleService  {
 		app = execute(app);
 		def bill = [:];
 		bill.billdate = dtSvc.serverDate;
+		bill.validuntil = dtSvc.getMonthEndDate(bill.billdate);
 		bill.amount = app.amount;
 		bill.items = app.fees;
 		return bill;

@@ -9,8 +9,14 @@ update lgu set
 	islocal = case when name like '%LIGAO%' then 1 else 0 end 
 go
 
+
 alter table cemetery add isoutsidelgu int default 0
 go
+alter table cemetery add lgu_objid varchar(50)
+go
+update cemetery set lgu_objid = (select objid from lgu where islocal = 1) where lgu_objid is null
+go 
+
 
 
 exec sp_rename 'dbo.deceased.lgu', 'lgu_objid', 'COLUMN'
