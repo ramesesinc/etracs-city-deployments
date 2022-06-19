@@ -62,7 +62,8 @@ public class ComisBillingService  {
         if (!param || !param.objid) throw new Exception('param.objid must be specified')
         def app = em_app.find([objid: param.objid]).first()
         if (!app) throw new Exception('Application does not exist or has already been deleted');
-        app.fees = em_app_fee.find([parentid: app.objid]).list()
+        app.fees = em_app_fee.where('amount > amtpaid').find([parentid: app.objid]).list()
+        if (!app.fees) throw new Exception('Application has already been fully paid.')
         return app
     }
 }

@@ -283,3 +283,32 @@ select
 
 
 
+/* permit */
+alter table application drop foreign key application_ibfk_2
+;
+
+alter table application drop column permitid
+;
+
+
+drop table if exists permit
+;
+
+create table permit (
+  objid varchar(50) not null,
+  appid varchar(50) not null,
+  paymentid varchar(50) default null,
+  permitno varchar(25) default null,
+  permitdate date default null,
+  permittype varchar(25) default null,
+  mayor_name varchar(255) default null,
+  mayor_title varchar(50) default null,
+  primary key (objid),
+  unique key ux_permitno (permitno),
+  key fk_permit_application (appid),
+  key fk_permit_payment (paymentid),
+  constraint permit_ibfk_1 foreign key (appid) references application (objid),
+  constraint permit_ibfk_2 foreign key (paymentid) references payment (objid)
+) engine=innodb default charset=utf8
+;
+

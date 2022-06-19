@@ -322,3 +322,46 @@ select
 go
 
 
+
+
+/* permit */
+alter table application drop constraint FK__applicati__permi__4B7734FF
+go
+
+drop index application.fk_application_permit
+go 
+
+alter table application drop column permitid 
+go
+
+if exists(select * from sysobjects where id = object_id('permit'))
+begin 
+  drop table permit
+end 
+go
+
+create table permit (
+  objid nvarchar(50) not null,
+  appid nvarchar(50) not null,
+  paymentid nvarchar(50) default null,
+  permitno nvarchar(25) default null,
+  permitdate date default null,
+  permittype nvarchar(25) default null,
+  mayor_name nvarchar(255) default null,
+  mayor_title nvarchar(50) default null,
+  primary key (objid)
+) 
+go
+
+create unique index ux_permitno on permit (permitno)
+go
+create index fk_permit_application on permit (appid)
+go
+create index fk_permit_payment on permit (paymentid)
+go
+alter table permit add constraint permit_ibfk_1 foreign key (appid) references application (objid)
+go 
+alter table permit add constraint permit_ibfk_2 foreign key (paymentid) references payment (objid)
+go 
+
+

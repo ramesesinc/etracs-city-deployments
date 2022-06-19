@@ -22,7 +22,6 @@
         <field name="amount" type="decimal" caption="Amount" required="true" />
         <field name="amtpaid" type="decimal" caption="Amount Paid" required="true" />
         <field name="balance" expr="amount - amtpaid" caption="Balance" />
-        <field name="permitid" />
         <field name="reportid" />
         <field name="balance" type="decimal" expr="amount - amtpaid" caption="Balance" />
         <complex name="lessor" serializer="default" />
