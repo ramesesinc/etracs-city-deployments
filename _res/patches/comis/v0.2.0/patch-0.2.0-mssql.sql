@@ -12,7 +12,7 @@ go
 
 alter table cemetery add isoutsidelgu int default 0
 go
-alter table cemetery add lgu_objid varchar(50)
+alter table cemetery add lgu_objid nvarchar(50)
 go
 update cemetery set lgu_objid = (select objid from lgu where islocal = 1) where lgu_objid is null
 go 
@@ -140,34 +140,185 @@ go
 
 
 /* INTERMENT ORDER */
-CREATE TABLE interment_order (
+
+CREATE TABLE intermentorder (
   objid nvarchar(50) NOT NULL,
   state nvarchar(25) NOT NULL,
   appid nvarchar(50) NOT NULL,
-  txnno nvarchar(25) NOT NULL,
-  txndate datetime NOT NULL,
-  dtapproved date DEFAULT NULL,
-  approvedby_name nvarchar(150) DEFAULT NULL,
-  approvedby_title nvarchar(50) DEFAULT NULL,
-  intermentdate date NOT NULL,
-  intermenttime nvarchar(10) NOT NULL,
-  regofficer_name nvarchar(150) NOT NULL,
-  regofficer_title nvarchar(50) NOT NULL,
-  undertaker_name nvarchar(150) NOT NULL,
-  undertaker_title nvarchar(50) NOT NULL,
-  createdby_name nvarchar(150) NOT NULL,
-  createdby_title nvarchar(50) NOT NULL,
+  orderno nvarchar(25) NOT NULL,
+  orderdate datetime NOT NULL,
+  intermentdate date NULL,
+  intermenttime nvarchar(10) NULL,
+  timehour int,
+  timemin int,
+  timeperiod nvarchar(2),
+  regofficer_name nvarchar(150) NULL,
+  regofficer_title nvarchar(50) NULL,
+  undertaker_name nvarchar(150) NULL,
+  undertaker_title nvarchar(50) NULL,
+  taskid nvarchar(50),
   PRIMARY KEY (objid)
 ) 
 go 
 
-create unique index ux_appid on interment_order (appid)
+create unique index ux_appid on intermentorder (appid)
 go 
-create index ix_state on interment_order (state)
+create index ix_taskid on intermentorder (taskid)
 go 
-create index ix_txnno on interment_order (txnno)
+create index ix_state on intermentorder (state)
+go 
+create index ix_orderno on intermentorder (orderno)
 go 
 
-alter table interment_order 
+alter table intermentorder 
   add CONSTRAINT fk_intermentorder_application FOREIGN KEY (appid) REFERENCES application (objid)
 go 
+
+CREATE TABLE intermentorder_task (
+  taskid nvarchar(50) NOT NULL,
+  refid nvarchar(50) DEFAULT NULL,
+  parentprocessid nvarchar(50) DEFAULT NULL,
+  state nvarchar(50) DEFAULT NULL,
+  startdate datetime DEFAULT NULL,
+  enddate datetime DEFAULT NULL,
+  assignee_objid nvarchar(50) DEFAULT NULL,
+  assignee_name nvarchar(100) DEFAULT NULL,
+  assignee_title nvarchar(80) DEFAULT NULL,
+  actor_objid nvarchar(50) DEFAULT NULL,
+  actor_name nvarchar(100) DEFAULT NULL,
+  actor_title nvarchar(80) DEFAULT NULL,
+  message nvarchar(255) DEFAULT NULL,
+  signature text,
+  returnedby nvarchar(100) DEFAULT NULL,
+  dtcreated datetime DEFAULT NULL,
+  prevtaskid nvarchar(100) DEFAULT NULL,
+  PRIMARY KEY (taskid)
+) 
+go
+
+create index ix_assignee_objid on intermentorder_task (assignee_objid)
+go
+create index ix_refid on intermentorder_task (refid)
+go
+alter table intermentorder_task add CONSTRAINT fk_intermentordertask_intermentorder 
+  FOREIGN KEY (refid) REFERENCES intermentorder (objid)
+go 
+
+if exists(select * from sysobjects where id = object_id('vw_intermentorder') )
+begin 
+  drop view vw_intermentorder 
+end 
+go 
+
+create view vw_intermentorder 
+as 
+select 
+	o.*,
+	a.appno,
+	a.dtapplied,
+	a.dtapproved,
+	a.applicant_objid,
+	a.applicant_name,
+	a.applicant_address,
+	a.deceased_objid,
+	d.name as deceased_name,
+	t.taskid as task_objid,
+	t.state as task_state,
+	t.enddate as task_enddate,
+	t.assignee_objid as task_assignee_objid,
+	t.actor_objid as task_actor_objid,
+	t.prevtaskid as task_prevtaskid
+from intermentorder o 
+inner join application a on o.appid = a.objid 
+inner join intermentorder_task t on o.objid = t.refid 
+inner join deceased d on a.deceased_objid = d.objid 
+go
+
+
+insert into sys_var (name, value, category)
+values('COMIS_REGISTRATION_OFFICER_NAME', '<COMIS_REGISTRATION_OFFICER_NAME>', 'COMIS')
+go 
+insert into sys_var (name, value, category)
+values('COMIS_REGISTRATION_OFFICER_TITLE', '<COMIS_REGISTRATION_OFFICER_TITLE>', 'COMIS')
+go 
+
+insert into sys_var (name, value, category)
+values('COMIS_UNDERTAKER_NAME', '<COMIS_UNDERTAKER_NAME>', 'COMIS')
+go 
+insert into sys_var (name, value, category)
+values('COMIS_UNDERTAKER_TITLE', '<COMIS_UNDERTAKER_TITLE>', 'COMIS')
+go 
+
+
+
+
+/* vw_application: add relation */
+if exists(select * from sysobjects where id = object_id('vw_application'))
+begin
+  drop view vw_application 
+end
+go
+
+create view vw_application 
+as 
+select 
+  a.objid as objid,
+  a.state as state,
+  a.online as online,
+  a.apptype as apptype,
+  a.appno as appno,
+  a.dtapplied as dtapplied,
+  a.dtapproved as dtapproved,
+  a.appyear as appyear,
+  a.applicant_name as applicant_name,
+  a.applicant_address as applicant_address,
+	rel.title as applicant_relation,
+  a.dtexpiry as dtexpiry,
+  a.amount as amount,
+  a.amtpaid as amtpaid,
+  a.renewable as renewable,
+  d.name as deceased_name,
+  d.nationality as deceased_nationality,
+  d.age as deceased_age,
+  d.agetype as deceased_agetype,
+  d.sex as deceased_sex,
+  d.dtdied as deceased_dtdied,
+  d.permissiontype as deceased_permissiontype,
+  cd.title as deceased_causeofdeath,
+  sbri.objid as resourceinfo_objid,
+  sbri.code as resourceinfo_code,
+  sbri.name as resourceinfo_name,
+  sbri.areasqm as resource_areasqm,
+  sbri.length as resource_length,
+  sbri.width as resource_width,
+  sb.objid as block_objid,
+  sb.code as block_code,
+  sb.name as block_name,
+  r.objid as resource_objid,
+  r.name as resource_type,
+  s.objid as section_objid,
+  s.code as section_code,
+  s.name as section_name,
+  c.objid as cemetery_objid,
+  c.code as cemetery_code,
+  c.name as cemetery_name,
+  t.taskid as task_objid,
+  t.state as task_state,
+  t.enddate as task_enddate,
+  t.assignee_objid as task_assignee_objid,
+  t.actor_objid as task_actor_objid,
+  t.prevtaskid as task_prevtaskid 
+  from  application a 
+  left join cemetery_section_block_resource_info sbri on a.resourceinfo_objid = sbri.objid  
+  left join cemetery_section_block_resource sbr on sbri.parentid = sbr.objid  
+  left join cemetery_section_block sb on sbr.parentid = sb.objid  
+  left join cemetery_section s on sb.parentid = s.objid  
+  left join cemetery c on s.parentid = c.objid  
+  left join resource r on sbri.resource_objid = r.objid  
+  left join deceased d on a.deceased_objid = d.objid  
+  left join causeofdeath cd on d.causeofdeath_objid = cd.objid  
+  left join application_task t on a.taskid = t.taskid 
+	left join relation rel on a.relation_objid = rel.objid 
+go
+
+

@@ -1,0 +1,30 @@
+<schema>
+    <element tablename="vw_intermentorder">
+        <field name="objid" primary="true" />
+        <field name="state" caption="State" searchable="true" />
+        <field name="appid" />
+        <field name="orderno"  caption="Order No." searchable="true" />
+        <field name="orderdate"  caption="Order Date" />
+        <field name="intermentdate" caption="Interment Date" />
+        <field name="intermenttime" caption="Interment Time" />
+        <field name="regofficer_name" />
+        <field name="regofficer_title" />
+        <field name="undertaker_name" caption="Undertaker"/>
+        <field name="undertaker_title" />
+        <field name="taskid" />
+        <field name="appno" caption="App No." searchable="true" />
+        <field name="dtapplied" />
+        <field name="dtapproved" />
+        <field name="applicant_objid" />
+        <field name="applicant_name" caption="Applicant" searchable="true" />
+        <field name="applicant_address" />
+        <field name="deceased_objid" />
+        <field name="deceased_name" caption="Deceased" searchable="true" />
+        <field name="task_objid" />
+        <field name="task_state" />
+        <field name="task_enddate" />
+        <field name="task_assignee_objid" />
+        <field name="task_actor_objid" />
+        <field name="task_prevtaskid       " />
+    </element>
+</schema>

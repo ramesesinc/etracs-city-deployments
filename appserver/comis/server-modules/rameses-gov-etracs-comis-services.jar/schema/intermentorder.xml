@@ -1,0 +1,26 @@
+<schema>
+    <element tablename="intermentorder">
+        <field name="objid" primary="true" prefix="IO" />
+        <field name="state" required="true" />
+        <field name="appid" required="true" />
+        <field name="orderno" required="true" caption="Order No." searchable="true"/>
+        <field name="orderdate" type="date" required="true" caption="Order Date" />
+        <field name="intermentdate" caption="Interment Date" />
+        <field name="intermenttime" caption="Interment Time" />
+        <field name="timehour" />
+        <field name="timemin" />
+        <field name="timeperiod" />
+        <field name="regofficer_name" />
+        <field name="regofficer_title" />
+        <field name="undertaker_name" />
+        <field name="undertaker_title" />
+        <field name="taskid" />
+        <complex name="app" 
+            ref="vw_application" 
+            jointype="many-to-one" 
+            required="true"
+        >
+            <key field="appid" target="objid" />
+        </complex>
+    </element>
+</schema>

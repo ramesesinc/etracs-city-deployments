@@ -1,0 +1,79 @@
+import com.rameses.annotations.*
+import com.rameses.services.extended.*
+
+class ComisIntermentOrderService {
+    @Env 
+    def env
+
+    @Service('Var')
+    def var
+
+    @Service('DateService')
+    def dtSvc
+
+    @Service('SequenceService')
+    def seqSvc
+
+    @Service("WorkflowTaskService")
+	def wfSvc;
+
+    @DataContext('intermentorder')
+    def em_order
+    
+    @ProxyMethod
+    public def create(order) {
+        if (!order.app) throw new Exception('app must be specified')
+        order.appid = order.app.objid
+        order.state = 'DRAFT'
+        order.orderno = getNextOrderNo(true)
+        order.orderdate = dtSvc.serverDate
+        order.regofficer = [
+            name: var.COMIS_REGISTRATION_OFFICER_NAME,
+            title: var.COMIS_REGISTRATION_OFFICER_TITLE
+        ]
+        order.undertaker = [
+            name: var.COMIS_UNDERTAKER_NAME,
+            title: var.COMIS_UNDERTAKER_TITLE,
+        ]
+        order.timehour = 10;
+        order.timemin = 00;
+        order.timeperiod = 'AM';
+        order.intermenttime = '10:00 AM';
+        order = em_order.create(order)
+        startWorkflow(order)
+        return order;
+    }
+
+    @ProxyMethod
+    public def approve(order) {
+        order.orderno = getNextOrderNo(false);
+        order.state = 'APPROVED';
+        em_order.find([objid: order.refid]).update([
+            state: order.state, 
+            orderno: order.orderno
+        ]);
+        return order;
+    }
+
+    void startWorkflow(order) {
+        def task = [:];
+        task.processname = 'intermentorder';
+        task.refid = order.objid;
+        task.startdate = dtSvc.getServerDate();
+        task.info = order;
+        task.assignee = [objid:env.USERID, name:env.FULLNAME];		
+        wfSvc.start(task);			
+    }
+
+    def getNextOrderNo(istemporary) {
+        def key = istemporary ? 'INTERMENT-ORDER-TEMP-' : 'INTERMENT-ORDER-'
+        def prefix = istemporary ? 'T' : ''
+
+        def cy = dtSvc.serverYear;
+        def keyid = key + cy;
+        def series = seqSvc.getNextFormattedSeries(keyid);
+        
+        return prefix + cy + '' + series;
+    }
+
+}
