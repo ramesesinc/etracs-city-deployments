@@ -1,6 +1,9 @@
 import com.rameses.annotations.*;
 
 public class ComisPermitService  {
+    @Service('Var')
+    def var
+
     @Service('DateService')
     def dtSvc
 
@@ -20,7 +23,6 @@ public class ComisPermitService  {
     @ProxyMethod
     public def init(app) {
         def param = reportParamSvc.getStandardParameter();
-        println 'param => ' + param;
         def payment = em_payment.find([appid: app.objid, voided: 0]).first()
 
         return [
@@ -37,7 +39,9 @@ public class ComisPermitService  {
                 dtapproved: app.dtapproved,
                 applicant: app.applicant,
                 deceased: app.deceased,
-            ]
+            ],
+            ordinanceno: var.get('COMIS_ORDINANCE_NO', '<COMIS_ORDINANCE_NO>'),
+            ordinancedate: var.get('COMIS_ORDINANCE_DATE', '<COMIS_ORDINANCE_DATE>'),
         ]
     }
 

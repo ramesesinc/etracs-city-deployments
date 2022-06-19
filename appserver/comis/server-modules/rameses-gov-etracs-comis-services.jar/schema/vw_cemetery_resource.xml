@@ -7,6 +7,8 @@
         <field name="currentinfoid" />
         <field name="currentappid" />
         <field name="areasqm" caption="Area (sqm)" />
+        <field name="length" caption="Length" />
+        <field name="width" caption="Width" />
         <!-- DRAFT, ACTIVE, INACTIVE -->
         <field name="state" caption="State" searchable="true" />
         <field name="resource_objid" />

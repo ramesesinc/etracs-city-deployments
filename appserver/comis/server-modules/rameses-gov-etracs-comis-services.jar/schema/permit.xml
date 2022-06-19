@@ -8,6 +8,8 @@
         <field name="permittype" />
         <field name="mayor_name" />
         <field name="mayor_title" />
+        <field name="ordinanceno" />
+        <field name="ordinancedate" type="date" />
         <complex name="app" ref="application" jointype="many-to-one"
             includefields="appno,dtapproved,apptype,appyear,applicant.name,deceased.name"
         >
