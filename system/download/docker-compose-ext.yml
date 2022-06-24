@@ -6,4 +6,3 @@ services:
       - "85:80"
 
   download-node-server:
-    volumes:
