@@ -7,6 +7,6 @@ app:
    modules:
       - { order: 240, version: 2.05, file: "modules/rptis/rameses-gov-etracs-rptis-landtax.jar" }
       - { order: 241, version: 2.08, file: "modules/rptis/rameses-gov-etracs-rptis-landtax-report.jar" }
-      - { order: 242, version: 2.03, file: "modules/rptis/rameses-gov-etracs-rptis.jar" }
-      - { order: 243, version: 2.04, file: "modules/rptis/rameses-gov-etracs-rptis-report.jar" }
+      - { order: 242, version: 2.04, file: "modules/rptis/rameses-gov-etracs-rptis.jar" }
+      - { order: 243, version: 2.05, file: "modules/rptis/rameses-gov-etracs-rptis-report.jar" }
       - { order: 245, version: 2.03, file: "modules/rptis/rameses-gov-etracs-rptis-city.jar" }
