@@ -2,6 +2,12 @@ import com.rameses.annotations.*
 import com.rameses.services.extended.*
 
 class ComisDeceasedPersonService {
+    @Env
+    def env;
+
+    @Service('DateService')
+    def dtSvc;
+
     @DataContext('deceased')
     def em_deceased;
 
@@ -13,6 +19,12 @@ class ComisDeceasedPersonService {
 
     @DataContext('lgu')
     def em_lgu;
+
+    @DataContext('comislog')
+    def em_txnlog;
+
+    @DataContext('application')
+    def em_app;
 
 
     @ProxyMethod
@@ -35,6 +47,59 @@ class ComisDeceasedPersonService {
         entity.state = 'APPROVED'
         em_deceased.find([objid: entity.objid]).update([state: entity.state])
         return entity
+    }
+
+    @ProxyMethod
+    public void validateRegistrationInfo(info) {
+		if (!info.objid) throw new Exception('objid must be specified');
+		if (!info.registryno) throw new Exception('Registry Number is required.');
+		if (!info.bookno) throw new Exception('Book Number is required.');
+		if (!info.pageno) throw new Exception('Page Number is required.');
+		
+        def deceased = em_deceased.select('objid,name')
+                    .where('objid <> :objid', info)
+					.find([
+						registryno: info.registryno,
+						bookno: info.bookno,
+						pageno: info.pageno,
+					])
+					.first()
+		if (deceased) {
+            def app = em_app.select('objid,appno')
+                        .find([deceased_objid: deceased.objid])
+                        .where("state <> 'DRAFT'")
+                        .orderBy('dtapplied DESC')
+                        .first()
+            def msg = 'Duplication registry information is not allowed.\n';
+            msg += '\n  * Registry No. ' + info.registryno
+            msg += '\n  * Book No. ' + info.bookno 
+            msg += '\n  * Page No. ' + info.pageno
+            msg += '\n\nRegistration has already been assigned to ' + deceased.name
+            if ( app ) {
+                msg += ' with Application No. ' + app.appno + '.'
+            } else {
+                msg += '.'
+            }
+            throw new Exception(msg)
+        }
+
+	}
+
+    @ProxyMethod
+    public def updateRegistryInfo(info) {
+        validateRegistrationInfo(info);
+        em_deceased.find([objid: info.objid]).update(info);
+        em_txnlog.create([
+            ref: 'deceased',
+            refid: info.objid,
+            txndate: dtSvc.serverDate,
+            action: 'update-registry-info',
+            remarks: info.remarks,
+            userid: env.USERID,
+            username: env.FULLNAME,
+            info: info
+        ])
+        return info
     }
 
 }
