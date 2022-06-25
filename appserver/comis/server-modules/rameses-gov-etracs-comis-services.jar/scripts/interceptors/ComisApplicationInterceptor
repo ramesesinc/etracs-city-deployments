@@ -41,7 +41,7 @@ class ComisApplicationInterceptor {
 	@Before(pattern="PersistenceService.update", eval="#{args[0]._schemaname=='application'}") 
 	public void beforeUpdate( evt ) {
 		def app = evt.args[0];
-		ruleSvc.assess(app);
+		svc.assess(app);
 	}
 
 	@After(pattern="PersistenceService.update", eval="#{args[0]._schemaname=='application'}") 

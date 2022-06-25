@@ -21,6 +21,10 @@
         <field name="infectious" />
         <field name="embalmed" />
         <field name="disposition" />
+        <field name="registryno" type="integer" />
+        <field name="pageno" type="integer" />
+        <field name="bookno" type="integer" />
+        
         <complex name="lgu" ref="lgu" jointype="many-to-one" required="false">
             <key field="lgu_objid" target="objid" />
         </complex>

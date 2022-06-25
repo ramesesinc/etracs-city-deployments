@@ -149,7 +149,7 @@ class ComisApplicationService {
         if (app.online == 1 || app.online) {
             entity.appno = getNextSeries()
             entity.dtapproved = dtSvc.serverDate;
-            entity.state = STATE_FORRELEASE;
+            entity.state = STATE_FORPAYMENT;
         } else {
             entity.state = STATE_ACTIVE;
             def task = signalWf(app, 'active');

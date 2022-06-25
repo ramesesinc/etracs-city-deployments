@@ -5,7 +5,10 @@ import com.rameses.services.extended.*
 class ComisDeceasedInterceptor {
 	@DataContext('application')
 	def em_app;
-	
+
+	@DataContext('deceased')
+	def em_deceased;
+
 	@Before(pattern="PersistenceService.create", eval="#{args[0]._schemaname=='deceased'}") 
 	public void beforeCreate( evt ) {
 		def deceased = evt.args[0];
@@ -15,6 +18,7 @@ class ComisDeceasedInterceptor {
 	@Before(pattern="PersistenceService.update", eval="#{args[0]._schemaname=='deceased'}") 
 	public void beforeUpdate( evt ) {
 		def deceased = evt.args[0];
+		validateRegistrationInfo(deceased);
 		updateAgeInfo(deceased);
 	}
 
@@ -27,7 +31,6 @@ class ComisDeceasedInterceptor {
 			msg += 'Delete the associated application instead.'
 			throw new Exception(msg)
 		}
-		println 'before delete => ' + entity;
 	}
 
 	void updateAgeInfo(deceased) {
@@ -38,5 +41,39 @@ class ComisDeceasedInterceptor {
 		} else {
 			deceased.ageinmon = deceased.age;
 		}
+	}
+
+	void validateRegistrationInfo(param) {
+		if (!param.registryno) throw new Exception('Registry Number is required.');
+		if (!param.bookno) throw new Exception('Book Number is required.');
+		if (!param.pageno) throw new Exception('Page Number is required.');
+        em_deceased.debug = true;
+		def deceased = em_deceased.select('objid,name')
+                    .where('objid <> :objid', param)
+					.find([
+						registryno: param.registryno,
+						bookno: param.bookno,
+						pageno: param.pageno,
+					])
+					.first()
+		if (deceased) {
+            def app = em_app.select('objid,appno')
+                        .find([deceased_objid: deceased.objid])
+                        .where("state <> 'DRAFT'")
+                        .orderBy('dtapplied DESC')
+                        .first()
+            def msg = 'Duplication registry information is not allowed.\n';
+            msg += '\n  * Registry No. ' + param.registryno
+            msg += '\n  * Book No. ' + param.bookno 
+            msg += '\n  * Page No. ' + param.pageno
+            msg += '\n\nRegistration has already been assigned to ' + deceased.name
+            if ( app ) {
+                msg += ' with Application No. ' + app.appno + '.'
+            } else {
+                msg += '.'
+            }
+            throw new Exception(msg)
+        }
+
 	}
 }
