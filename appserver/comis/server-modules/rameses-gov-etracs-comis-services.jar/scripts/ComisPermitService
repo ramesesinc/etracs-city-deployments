@@ -10,7 +10,7 @@ public class ComisPermitService  {
     @Service('SequenceService')
     def seqSvc
 
-    @Service('ReportParameterService')
+    @Service(value='ReportParameterService', connection="etracs")
     def reportParamSvc
 
     @DataContext('permit')
@@ -23,13 +23,13 @@ public class ComisPermitService  {
     @ProxyMethod
     public def init(app) {
         def param = reportParamSvc.getStandardParameter();
-        def payment = em_payment.find([appid: app.objid, voided: 0]).first()
+        def payment = em_payment.find([appid: app.objid, voided: 0]).first();
 
         return [
             appid: app.objid,
             paymentid: payment?.objid,
             payment: payment,
-            permitdate: dtSvc.serverDate,
+            permitdate: dtSvc.format('yyyy-MM-dd', dtSvc.serverDate),
             permittype: app.apptype,
             mayor: [name: param.MAYORNAME, title: param.MAYORTITLE],
             app: [
@@ -40,8 +40,8 @@ public class ComisPermitService  {
                 applicant: app.applicant,
                 deceased: app.deceased,
             ],
-            ordinanceno: var.get('COMIS_ORDINANCE_NO', '<COMIS_ORDINANCE_NO>'),
-            ordinancedate: var.get('COMIS_ORDINANCE_DATE', '<COMIS_ORDINANCE_DATE>'),
+            ordinanceno: var.getProperty('COMIS_ORDINANCE_NO', '<COMIS_ORDINANCE_NO>'),
+            ordinancedate: var.getProperty('COMIS_ORDINANCE_DATE', '<COMIS_ORDINANCE_DATE>'),
         ]
     }
 
