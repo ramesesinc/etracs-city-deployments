@@ -1,0 +1,8 @@
+2.5.04.05.04
+==========================================================
+
+LANDTAX:
+    - REPORT: abstract of collection: remittance.dtposted to controldate 
+
+ASSESSOR:
+    - 
