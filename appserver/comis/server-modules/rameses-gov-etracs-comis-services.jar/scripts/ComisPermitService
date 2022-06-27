@@ -1,0 +1,60 @@
+import com.rameses.annotations.*;
+
+public class ComisPermitService  {
+    @Service('Var')
+    def var
+
+    @Service('DateService')
+    def dtSvc
+
+    @Service('SequenceService')
+    def seqSvc
+
+    @Service(value='ReportParameterService', connection="etracs")
+    def reportParamSvc
+
+    @DataContext('permit')
+    def em_permit;
+
+    @DataContext('payment')
+    def em_payment;
+
+
+    @ProxyMethod
+    public def init(app) {
+        def param = reportParamSvc.getStandardParameter();
+        def payment = em_payment.find([appid: app.objid, voided: 0]).first();
+
+        return [
+            appid: app.objid,
+            paymentid: payment?.objid,
+            payment: payment,
+            permitdate: dtSvc.format('yyyy-MM-dd', dtSvc.serverDate),
+            permittype: app.apptype,
+            mayor: [name: param.MAYORNAME, title: param.MAYORTITLE],
+            app: [
+                appno: app.appno,
+                apptype: app.apptype,
+                appyear: app.appyear,
+                dtapproved: app.dtapproved,
+                applicant: app.applicant,
+                deceased: app.deceased,
+            ],
+            ordinanceno: var.getProperty('COMIS_ORDINANCE_NO', '<COMIS_ORDINANCE_NO>'),
+            ordinancedate: var.getProperty('COMIS_ORDINANCE_DATE', '<COMIS_ORDINANCE_DATE>'),
+        ]
+    }
+
+    @ProxyMethod
+    public def issuePermit(entity) {
+        entity.permitno = getNextPermitNo();
+        return em_permit.create(entity);
+    }
+
+    def getNextPermitNo() {
+        def cy = dtSvc.serverYear;
+        def keyid = 'COMIS-PERMIT-' + cy;
+        def series = seqSvc.getNextFormattedSeries(keyid);
+        return cy + '' + series;
+    }
+}

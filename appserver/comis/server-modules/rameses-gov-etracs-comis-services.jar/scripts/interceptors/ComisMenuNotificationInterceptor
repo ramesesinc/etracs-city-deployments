@@ -32,7 +32,6 @@ class ComisMenuNotificationInterceptor {
 	@After(pattern="MenuNotificationService.getCount", eval="#{ args[0].notificationid.startsWith('comis_application') }")
 	public void getApplicationCount( def evt ) {
 		def nid = evt.args[0].notificationid;
-		println 'nid => ' + nid;
 		def result = evt.result;
 		def cnt = taskCountSvc.getProcessTaskCount( [processname: "application", domain: "COMIS", notificationid: nid ] );
 		if(cnt) result.count = cnt.count;

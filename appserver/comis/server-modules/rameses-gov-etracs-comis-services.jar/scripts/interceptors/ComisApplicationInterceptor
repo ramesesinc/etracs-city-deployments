@@ -27,6 +27,23 @@ class ComisApplicationInterceptor {
 	@DataContext('cemetery_resource')
     def em_cem_resource;
 
+	@DataContext('permit')
+    def em_permit;
+
+	@After(pattern="PersistenceService.read", eval="#{args[0]._schemaname=='application'}") 
+	public void afterRead( evt ) {
+		def app = evt.result;
+		def permit = em_permit.find([appid: app.objid]).first();
+        app.permitid = permit?.objid;
+        app.permit = permit;
+	}
+
+	@Before(pattern="PersistenceService.update", eval="#{args[0]._schemaname=='application'}") 
+	public void beforeUpdate( evt ) {
+		def app = evt.args[0];
+		svc.assess(app);
+	}
+
 	@After(pattern="PersistenceService.update", eval="#{args[0]._schemaname=='application'}") 
 	public void afterUpdate( evt ) {
 		def app = evt.args[0];

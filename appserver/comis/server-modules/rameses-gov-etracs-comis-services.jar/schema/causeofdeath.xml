@@ -2,6 +2,6 @@
     <element tablename="causeofdeath">
         <field name="objid" primary="true" prefix="CD" caption="Code" searchable="true" visible="true" />
         <field name="state" required="true" caption="State" searchable="true" defaultValue="DRAFT" />
-        <field name="title" required="true" caption="Cause of Death" searchable="true" />
+        <field name="title" required="true" caption="Cause of Death" searchable="true" width="200" />
     </element>
 </schema>

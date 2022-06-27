@@ -5,13 +5,16 @@ class ComisApplicationService {
     @Env 
     def env;
     
+    @Service('Var')
+    def var;
+    
     @Service('DateService')
     def dtSvc;
 
     @Service('SequenceService')
     def seqSvc;
 
-    @Service('ReportParameterService')
+    @Service(value='ReportParameterService', connection="etracs")
     def reportSvc;
 
     @Service('ComisApplicationRuleService')
@@ -19,6 +22,9 @@ class ComisApplicationService {
 
     @Service("WorkflowTaskService")
 	def wfSvc;
+
+    @Service('ComisBillingService')
+    def billingSvc;
 
     @DataContext('application')
     def em_app;
@@ -98,7 +104,8 @@ class ComisApplicationService {
     @ProxyMethod
     public def renew(param) {
         def prevapp = openValidatePrevApp(param);
-        def app = initApp(prevapp)
+        checkFullyPaid(prevapp);
+        def app = initApp(prevapp);
         app.apptype = 'RENEWAL';
         app.applicant = param.applicant;
         app.relation = param.relation;
@@ -111,6 +118,7 @@ class ComisApplicationService {
     @ProxyMethod
     public def transfer(param) {
         def prevapp = openValidatePrevApp(param);
+        checkFullyPaid(prevapp);
         def app = initApp(prevapp)
         app.apptype = 'TRANSFER';
         app.applicant = prevapp.applicant;
@@ -207,7 +215,7 @@ class ComisApplicationService {
         app.deceased = prevapp.deceased;
         app.amount = 0;
         app.amtpaid = 0;
-        app.renewable = true;
+        app.renewable = false;
         setLessor(app);
         app.lessee = [:];
         app.prevappid = prevapp.objid;
@@ -258,7 +266,9 @@ class ComisApplicationService {
         app.lessor = [:];
         app.lessor.name = params.MAYORNAME;
         app.lessor.title = params.MAYORTITLE;
-        app.lessor.ctcplaceissued = params.LGUADDRESS;
+        def placeissued = var.get('COMIS_LESSOR_CTC_PLACEISSUED');
+        app.lessor.ctcplaceissued = placeissued ? placeissued : params.LGUADDRESS
+        app.lessor.ctcno = var.get('COMIS_LESSOR_CTC_NO')
     }
 
     
@@ -275,6 +285,23 @@ class ComisApplicationService {
 				app.dtexpiry = dtSvc.add(app.dtapproved, interval);
 			}
 		}
+    }
+
+    void checkFullyPaid(prevapp) {
+        def bill = null;
+        try {
+            def billparam = billingSvc.initBill([:]);
+            billparam.app = prevapp
+            bill = billingSvc.getBilling(billparam);
+        } catch (e) {
+            //ignore
+        }
+
+        if (bill && bill.amount > 0) {
+            def msg = 'Application cannot be processed.\n';
+            msg += 'Please pay outstanding balance first before processing.'
+            throw new Exception(msg)
+        }
     }
 
 

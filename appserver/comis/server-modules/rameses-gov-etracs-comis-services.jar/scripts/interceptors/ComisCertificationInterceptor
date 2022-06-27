@@ -1,0 +1,41 @@
+import com.rameses.annotations.*
+import com.rameses.common.*;
+import com.rameses.services.extended.*
+
+class ComisCertificationInterceptor {
+	@Service('ComisUtil')
+	def util;
+
+	@DataContext('certification')
+	def em_certification;
+	
+	@DataContext('certification_task')
+	def em_task;
+	
+	@DataContext('deceased')
+	def em_deceased;
+	
+
+
+	@After(pattern="FormReportService.getData", eval="#{args[0].reportid == 'deceased_available'}", index=100)
+	public void getData(def evt) {
+		def param  = evt.args[0].parameters;
+		println 'param => ' + param
+
+		def certification = em_certification.find(param).first()
+		if (!certification) throw new Exception('Certification does not exist or has already been deleted.')
+		certification.deceased = em_deceased.find([objid: certification.refid]).first()
+		if (!certification.deceased) throw new Exception('Deceased record does not exist or has already been deleted.')
+
+		def tasks = em_task.select('state,actor.*')
+                    .where('actor_objid is not null')
+                    .find([refid: certification.objid])
+                    .orderBy('startdate')
+                    .list()
+		tasks.each {
+            certification[it.state] = it.actor
+		}
+
+		evt.result.data = certification;
+	}
+}

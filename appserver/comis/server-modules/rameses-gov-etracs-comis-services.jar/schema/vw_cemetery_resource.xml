@@ -7,10 +7,13 @@
         <field name="currentinfoid" />
         <field name="currentappid" />
         <field name="areasqm" caption="Area (sqm)" />
+        <field name="length" caption="Length" />
+        <field name="width" caption="Width" />
         <!-- DRAFT, ACTIVE, INACTIVE -->
         <field name="state" caption="State" searchable="true" />
         <field name="resource_objid" />
         <field name="resource_name" caption="Type" searchable="true" />
+        <field name="resource_allowmultiple" type="boolean" />
         <field name="section_objid" />
         <field name="section_code" caption="Section Code" searchable="true" />
         <field name="section_name" caption="Section" searchable="true" />

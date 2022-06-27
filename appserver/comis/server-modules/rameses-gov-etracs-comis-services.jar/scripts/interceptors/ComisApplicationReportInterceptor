@@ -94,11 +94,13 @@ class ComisApplicationReportInterceptor {
 		def app = em_app.read([objid: appid]);
 		if (!app) throw new Exception('Application does not exist or has already been deleted.')
 
+		def permit = em_permit.find([appid: app.objid]).first();
+		if (!permit) throw new Exception('Permit record does not exist');
+
 		def cemetery = app.resourceinfo.cemetery;
 		cemetery.isnew = cemetery.isnew == 1
 
 		def data = [:]
-		def permit = em_permit.read([objid: app.permitid]);
 		app.deceased.dtdied = dtSvc.format('MMMMM dd, yyyy', app.deceased.dtdied);
 		data.resourceinfo = getResourceInfo(app);
 		data.putAll(app);
@@ -118,6 +120,7 @@ class ComisApplicationReportInterceptor {
 		cemetery.isnew = cemetery.isnew == 1
 
 		def resourceinfo = app.remove('resourceinfo');
+		println 'resourceinfo => ' + resourceinfo
 		resourceinfo.measure = resourceinfo.width + "x" + resourceinfo.length;
 		resourceinfo.type = resourceinfo.resource.name;
 		resourceinfo.title = resourceinfo.name + ' (Sec. ' + section.code + ', Blk. ' + block.code + ')';

@@ -68,11 +68,33 @@ public class ComisUtil  {
 	@ProxyMethod
 	public void buildLguFilter(params) {
 		if (params.lgu) {
-			params.filters << ' lgu = :lguid ';
+			params.filters << ' lgu_objid = :lguid ';
 			params.lguid = params.lgu.objid;
 			params.query.lgu = params.lgu.objid;
 		} else {
 			params.query.lgu = 'ALL';
+		}
+	}
+
+	@ProxyMethod
+	public void buildPlaceOfDeathFilter(params) {
+		if (params.placeofdeath) {
+			params.filters << ' placeofdeath_objid = :placeofdeathid ';
+			params.placeofdeathid = params.placeofdeath.objid;
+			params.query.placeofdeath = params.placeofdeath.objid;
+		} else {
+			params.query.placeofdeath = 'ALL';
+		}
+	}
+
+	@ProxyMethod
+	public void buildPlaceOfBurialFilter(params) {
+		if (params.placeofburial) {
+			params.filters << ' placeofburial_objid = :placeofburialid ';
+			params.placeofburialid = params.placeofburial.objid;
+			params.query.placeofburial = params.placeofburial.objid;
+		} else {
+			params.query.placeofburial = 'ALL';
 		}
 	}
 

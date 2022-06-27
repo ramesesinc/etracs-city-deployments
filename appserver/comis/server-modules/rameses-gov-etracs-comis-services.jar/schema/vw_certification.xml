@@ -1,0 +1,27 @@
+<schema>
+  <element tablename="vw_certification">
+    <field name="objid" primary="true" />
+    <field name="state" caption="State" />
+    <field name="txnno" caption="Certification No." searchable="true" />
+    <field name="txndate" caption="Certification Date" />
+    <field name="deceased_name" caption="Deceased"/>
+    <field name="requestedby_name" caption="Requested By" searchable="true" />
+    <field name="requestedby_address" caption="Address"/>
+    <field name="purpose" />
+    <field name="refid" />
+    <field name="reftype" />
+    <field name="receipt_objid" />
+    <field name="receipt_no" caption="Receipt No." searchable="true" />
+    <field name="receipt_date" caption="Receipt Date" />
+    <field name="receipt_amount" caption="Amount" />
+    <field name="report_name" />
+    <field name="taskid" />
+    <field name="report_id" caption="Type" searchable="true" />
+    <field name="task_objid" />
+    <field name="task_state" />
+    <field name="task_enddate" />
+    <field name="task_assignee_objid" />
+    <field name="task_actor_objid" />
+    <field name="task_prevtaskid" />
+  </element>
+  </schema>

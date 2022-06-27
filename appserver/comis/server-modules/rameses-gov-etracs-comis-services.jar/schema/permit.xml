@@ -2,9 +2,21 @@
     <element tablename="permit">
         <field name="objid" primary="true" prefix="P" />
         <field name="appid" required="true" />
-        <field name="paymentid" required="true" />
-        <field name="permitno" required="true" caption="Permit No." searchable="true" />
-        <field name="permitdate" required="true"  caption="Permit Date" />
-        <field name="permittype" required="true"  caption="Permit Type" />        
+        <field name="paymentid" />
+        <field name="permitno" caption="Permit No." searchable="true" />
+        <field name="permitdate" />
+        <field name="permittype" />
+        <field name="mayor_name" />
+        <field name="mayor_title" />
+        <field name="ordinanceno" />
+        <field name="ordinancedate" />
+        <complex name="app" ref="application" jointype="many-to-one"
+            includefields="appno,dtapproved,apptype,appyear,applicant.name,deceased.name"
+        >
+            <key field="appid" target="objid" />
+        </complex>
+        <complex name="payment" ref="payment" jointype="many-to-one" required="false">
+            <key field="paymentid" target="objid" />
+        </complex>
     </element>
 </schema>

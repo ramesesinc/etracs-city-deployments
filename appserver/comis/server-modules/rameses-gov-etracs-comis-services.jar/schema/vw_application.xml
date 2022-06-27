@@ -10,12 +10,14 @@
         <field name="appyear" type="integer" />
         <field name="applicant_name" caption="Applicant" searchable="true" />
         <field name="applicant_address" />
+        <field name="applicant_relation" />
         <field name="dtexpiry" caption="Expiry Date" />
         <field name="amount" type="decimal" />
         <field name="amtpaid" type="decimal" />
         <field name="deceased_name" caption="Deceased" searchable="true" />
         <field name="deceased_nationality" />
         <field name="deceased_age" />
+        <field name="deceased_agetype" />
         <field name="deceased_sex" caption="Sex" />
         <field name="deceased_dtdied" />
         <field name="deceased_permissiontype" />

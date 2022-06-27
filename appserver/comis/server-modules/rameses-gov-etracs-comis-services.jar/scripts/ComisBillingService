@@ -1,0 +1,68 @@
+import com.rameses.annotations.*;
+
+public class ComisBillingService  {
+    @Service('DateService')
+    def dtSvc
+
+    @Service('ComisApplicationBillingRuleService')
+    def billingRuleSvc
+
+    @DataContext('application')
+    def em_app
+
+    @DataContext('application_fee')
+    def em_app_fee
+
+
+	@ProxyMethod
+	public def initBill(params) {
+		def pdate = dtSvc.parseCurrentDate()
+		def objid = 'RB' + new java.rmi.server.UID()
+		def bill = [:]
+		bill.objid = objid 
+		bill.billid = objid 
+		bill.billtoyear = pdate.year
+		bill.cy = pdate.year
+        bill.cqtr = pdate.qtr
+        bill.cmonth = pdate.month
+        return bill 
+	}
+
+    @ProxyMethod
+    public def getBilling(bill) {
+        def app = getApplication(bill.app)
+        bill = billingRuleSvc.getBilling(app)
+        bill.app = [:];
+        bill.app.objid = app.objid
+        bill.app.apptype = app.apptype
+        bill.app.appno = app.appno
+        bill.app.appyear = app.appyear
+        bill.app.dtapplied = app.dtapplied
+        bill.app.dtapproved = app.dtapproved
+        
+        bill.app.deceased = app.deceased
+        bill.app.applicant = app.applicant
+        
+        bill.app.dtexpiry = app.dtexpiry
+        bill.app.lessor = app.lessor
+        bill.app.lessee = app.lessee
+        
+        bill.app.resourceinfo = [:]
+        bill.app.resourceinfo.code = app.resourceinfo.code
+        bill.app.resourceinfo.name = app.resourceinfo.name
+        bill.app.resourceinfo.block = app.resourceinfo.block.name
+        bill.app.resourceinfo.section = app.resourceinfo.section.name
+        bill.app.resourceinfo.cemetery = app.resourceinfo.cemetery.name
+        return bill
+    }
+
+    @ProxyMethod
+    public def getApplication(param) {
+        if (!param || !param.objid) throw new Exception('param.objid must be specified')
+        def app = em_app.find([objid: param.objid]).first()
+        if (!app) throw new Exception('Application does not exist or has already been deleted');
+        app.fees = em_app_fee.where('amount > amtpaid').find([parentid: app.objid]).list()
+        if (!app.fees) throw new Exception('Application has already been fully paid.')
+        return app
+    }
+}

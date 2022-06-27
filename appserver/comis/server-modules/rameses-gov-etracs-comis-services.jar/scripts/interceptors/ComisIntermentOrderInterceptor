@@ -1,0 +1,46 @@
+import com.rameses.annotations.*;
+import com.rameses.common.*;
+import com.rameses.services.extended.*;
+
+class ComisIntermentOrderInterceptor {
+	
+	@Service('DateService')
+	def dtSvc;
+
+	@Service('ComisIntermentOrderService')
+	def orderSvc;
+
+	@DataContext('intermentorder_task')
+	def em_task;
+
+	@After(pattern="PersistenceService.read", eval="#{ args[0]._schemaname == 'intermentorder' }")
+	public void afterOpen(def evt) {
+		def order = evt.result;
+		order.timehour = order.timehour.toString().padLeft(2, '0')
+		order.timemin = order.timemin.toString().padLeft(2, '0')
+	}	
+
+	@Before(pattern="PersistenceService.update", eval="#{ args[0]._schemaname == 'intermentorder' }")
+	public void beforeUpdate(def evt) {
+		def order = evt.args[0];
+		def currdate = dtSvc.serverDate;
+		def intermentdate = dtSvc.parse('yyyy-MM-dd', order.intermentdate) + 1;
+		if (intermentdate < currdate) throw new Exception('Interment Date must be on or after ' + dtSvc.format('MMMMM dd, yyyy', currdate));
+		order.intermenttime = order.timehour + ':' + order.timemin + ' ' + order.timeperiod;
+	}	
+	
+	@Before(pattern="PersistenceService.removeEntity", eval="#{ args[0]._schemaname == 'intermentorder' }")
+	public void beforeDeleteIntermentOrder(def evt) {
+		def intermentorder = evt.args[0];
+		em_task.find([refid: intermentorder.objid]).delete();
+	}	
+
+
+	@After(pattern="WorkflowTaskService.signal", eval="#{args[0].processname == 'intermentorder' && args[0].taskstate == 'approver'}")
+	public void approveOrder(evt) {
+		def order = evt.result;
+		orderSvc.approve(order);
+	}
+
+
+}

@@ -22,13 +22,15 @@ class ComisReportDeceasedListInterceptor {
 		util.buildStartEndDateFilter(params);
 		util.buildAgeGroupFilter(params);
 		util.buildLguFilter(params);
+		util.buildPlaceOfDeathFilter(params);
+		util.buildPlaceOfBurialFilter(params);
 		
 		def where = params.filters.join(' AND ');
 		def list = em_deceased.where([where, params]).orderBy('name').list();
 		if (list) {
 			list.each{
 				it.age = util.toAgeStr(it.age, it.agetype);
-				it.address = it.address + ', ' + it.lgu;
+				it.address = it.address + ', ' + it.lgu.name;
 			}
 			list[0].query = params.query;
 		}
