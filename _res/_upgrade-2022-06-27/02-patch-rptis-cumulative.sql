@@ -2867,3 +2867,131 @@ join entity e on f.taxpayer_objid = e.objid
 go 
 
 
+CREATE TABLE batch_rpttaxcredit_ledger_posted (
+  objid varchar(50) NOT NULL,
+  parentid varchar(50) NOT NULL,
+  barangayid varchar(50) NOT NULL,
+  PRIMARY KEY (objid)
+) 
+go
+
+create index ix_parentid on batch_rpttaxcredit_ledger_posted (parentid)
+go
+create index ix_barangayid on batch_rpttaxcredit_ledger_posted (barangayid)
+go
+alter table batch_rpttaxcredit_ledger_posted 
+  add CONSTRAINT batch_rpttaxcredit_ledger_posted_ibfk_1 FOREIGN KEY (parentid) REFERENCES batch_rpttaxcredit (objid)
+go
+alter table batch_rpttaxcredit_ledger_posted 
+  add CONSTRAINT batch_rpttaxcredit_ledger_posted_ibfk_2 FOREIGN KEY (objid) REFERENCES rptledger (objid)
+go
+
+if exists(select * from sysobjects where id = object_id('rptacknowledgement_item'))
+begin
+  drop table rptacknowledgement_item
+end
+go 
+if exists(select * from sysobjects where id = object_id('rptacknowledgement'))
+begin
+  drop table rptacknowledgement
+end
+go 
+
+CREATE TABLE rptacknowledgement (
+  objid varchar(50) NOT NULL,
+  state varchar(25) NOT NULL,
+  txnno varchar(25) NOT NULL,
+  txndate datetime DEFAULT NULL,
+  taxpayer_objid varchar(50) DEFAULT NULL,
+  txntype_objid varchar(50) DEFAULT NULL,
+  releasedate datetime DEFAULT NULL,
+  releasemode varchar(50) DEFAULT NULL,
+  receivedby varchar(255) DEFAULT NULL,
+  remarks varchar(255) DEFAULT NULL,
+  pin varchar(25) DEFAULT NULL,
+  createdby_objid varchar(50) DEFAULT NULL,
+  createdby_name varchar(150) DEFAULT NULL,
+  createdby_title varchar(100) DEFAULT NULL,
+  dtchecked datetime DEFAULT NULL,
+  PRIMARY KEY (objid)
+) 
+go
+
+create UNIQUE index ux_rptacknowledgement_txnno on rptacknowledgement (txnno)
+go 
+create index ix_rptacknowledgement_pin on rptacknowledgement (pin)
+go 
+create index ix_rptacknowledgement_taxpayerid on rptacknowledgement (taxpayer_objid)
+go 
+create index ix_rptacknowledgement_createdby_objid on rptacknowledgement (createdby_objid)
+go 
+create index ix_rptacknowledgement_createdby_name on rptacknowledgement (createdby_name)
+go 
+
+CREATE TABLE rptacknowledgement_item (
+  objid varchar(50) NOT NULL,
+  parent_objid varchar(50) NOT NULL,
+  trackingno varchar(25) DEFAULT NULL,
+  ref_objid varchar(50) DEFAULT NULL,
+  newfaas_objid varchar(50) DEFAULT NULL,
+  remarks varchar(255) DEFAULT NULL,
+  reftype varchar(50) DEFAULT NULL,
+  refno varchar(50) DEFAULT NULL,
+  PRIMARY KEY (objid)
+) 
+go 
+
+create UNIQUE index ux_rptacknowledgement_itemno on rptacknowledgement_item (trackingno)
+go 
+create index ix_rptacknowledgement_parentid on rptacknowledgement_item (parent_objid)
+go 
+create index ix_rptacknowledgement_item_faasid on rptacknowledgement_item (ref_objid)
+go 
+create index ix_rptacknowledgement_item_newfaasid on rptacknowledgement_item (newfaas_objid)
+go 
+  
+alter table rptacknowledgement_item add CONSTRAINT fk_rptacknowledgement_item_rptacknowledgement FOREIGN KEY (parent_objid) REFERENCES rptacknowledgement (objid)
+go 
+
+
+alter table rptcompromise_item add qtr int
+go 
+
+if exists(select * from sysobjects where id = object_id('rpttracking'))
+begin 
+  DROP TABLE rpttracking
+end 
+go 
+
+CREATE TABLE rpttracking (
+  objid varchar(50) NOT NULL,
+  filetype varchar(50) DEFAULT NULL,
+  trackingno varchar(25) NOT NULL,
+  dtfiled datetime DEFAULT NULL,
+  taxpayer_objid varchar(50) DEFAULT NULL,
+  txntype_objid varchar(50) DEFAULT NULL,
+  releasedate datetime DEFAULT NULL,
+  releasemode varchar(50) DEFAULT NULL,
+  receivedby varchar(255) DEFAULT NULL,
+  remarks varchar(255) DEFAULT NULL,
+  landcount int DEFAULT '0',
+  bldgcount int DEFAULT '0',
+  machcount int DEFAULT '0',
+  planttreecount int DEFAULT '0',
+  misccount int DEFAULT '0',
+  pin varchar(25) DEFAULT NULL,
+  PRIMARY KEY (objid)
+) 
+go 
+
+create UNIQUE index ux_rpttracking_trackingno on rpttracking (trackingno)
+go 
+create index ix_rpttracking_receivedby on rpttracking (receivedby)
+go 
+create index ix_rpttracking_remarks on rpttracking (remarks)
+go 
+create index ix_rpttracking_pin on rpttracking (pin)
+go 
+alter table rpu add stewardparentrpumasterid varchar(50)
+go 
+
