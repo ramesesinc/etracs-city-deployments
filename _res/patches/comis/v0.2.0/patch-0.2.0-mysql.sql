@@ -303,6 +303,8 @@ create table permit (
   permittype varchar(25) default null,
   mayor_name varchar(255) default null,
   mayor_title varchar(50) default null,
+  ordinanceno varchar(20) default null,
+  ordinancedate date default null,
   primary key (objid),
   unique key ux_permitno (permitno),
   key fk_permit_application (appid),
@@ -366,4 +368,213 @@ left join `deceased` `d` on `a`.`deceased_objid` = `d`.`objid`
 left join `causeofdeath` `cd` on `d`.`causeofdeath_objid` = `cd`.`objid`
 ;
 
+
+INSERT INTO `sys_var` (`name`, `value`, `description`, `datatype`, `category`) VALUES ('COMIS_ORDINANCE_DATE', NULL, NULL, NULL, 'COMIS');
+INSERT INTO `sys_var` (`name`, `value`, `description`, `datatype`, `category`) VALUES ('COMIS_ORDINANCE_NO', '<ORDINANCE_NO>', NULL, NULL, 'COMIS');
+
+
+
+/* REGISTRATION INFORMATION */
+alter table deceased 
+	add registryno int,
+	add pageno int,
+	add bookno int
+;
+
+create index ix_registryno on deceased(registryno, bookno, pageno)
+;
+
+update sys_wf_transition set caption = 'For Payment' 
+where processname = 'application' and parentid = 'for-payment'
+;
+
+
+update sys_wf_transition set 
+	properties = '[visibleWhen:"#{false}"]'
+where processname = 'application' and parentid in('active', 'expired', 'renewed') and action = 'closed'
+;
+
+update sys_wf_transition set 
+	properties = '[visibleWhen:"#{false}"]'
+where processname = 'application' and parentid in('for-payment') and action = 'post-payment'
+;
+
+update sys_wf_transition set 
+	properties = '[visibleWhen:"#{false}"]'
+where processname = 'application' and parentid in('releaser') and action = 'void-payment'
+;
+
+update sys_wf_transition set 
+	properties = '[visibleWhen:"#{false}"]'
+where processname = 'application' and parentid in('active') and action = 'expired'
+;
+
+update sys_wf_transition set 
+	properties = '[visibleWhen:"#{false}"]'
+where processname = 'application' and parentid in('expired') and action = 'renewed'
+;
+
+update sys_wf_node set title = 'For Payment' where processname='application' and name ='for-payment' 
+;
+
+update sys_wf_node set title = 'For Release' where processname='application' and name ='releaser' 
+;
+
+CREATE TABLE txnlog (
+  objid varchar(50) NOT NULL,
+  ref varchar(100) NOT NULL,
+  refid varchar(255) NOT NULL,
+  txndate datetime NOT NULL,
+  action varchar(50) NOT NULL,
+  userid varchar(50) NOT NULL,
+  remarks text,
+  info text,
+  username varchar(150) DEFAULT NULL,
+  PRIMARY KEY (objid),
+  KEY ix_txndate (txndate),
+  KEY ix_txnlog_action (action),
+  KEY ix_txnlog_ref (ref),
+  KEY ix_txnlog_userid (userid),
+  KEY ix_txnlog_useridaction (userid,action),
+  KEY ix_refid (refid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+;
+
+
+
+
+/* CERTIFICATION */
+
+CREATE TABLE `certification` (
+  `objid` varchar(50) NOT NULL,
+  `state` varchar(25) NOT NULL,
+  `txnno` varchar(25) NOT NULL,
+  `txndate` datetime NOT NULL,
+  `requestedby_name` varchar(255) NOT NULL,
+  `requestedby_address` varchar(255) NOT NULL,
+  `purpose` varchar(255) NOT NULL,
+  `refid` varchar(50) NOT NULL,
+  `reftype` varchar(255) NOT NULL,
+  `handler` varchar(25) NOT NULL,
+  `receipt_objid` varchar(50) DEFAULT NULL,
+  `receipt_no` varchar(15) DEFAULT NULL,
+  `receipt_date` date DEFAULT NULL,
+  `receipt_amount` decimal(16,2) DEFAULT NULL,
+  `report_name` varchar(50) NOT NULL,
+  `taskid` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`objid`),
+  UNIQUE KEY `ix_txnno` (`txnno`),
+  KEY `ix_state` (`state`) USING BTREE,
+  KEY `ix_requestedby` (`requestedby_name`),
+  KEY `ix_refid` (`refid`),
+  KEY `ix_receiptid` (`receipt_objid`),
+  KEY `ix_receiptno` (`receipt_no`),
+  KEY `ix_taskid` (`taskid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+;
+drop table if exists certification_task;
+
+CREATE TABLE `certification_task` (
+  `taskid` varchar(50) NOT NULL,
+  `refid` varchar(50) DEFAULT NULL,
+  `parentprocessid` varchar(50) DEFAULT NULL,
+  `state` varchar(50) DEFAULT NULL,
+  `startdate` datetime DEFAULT NULL,
+  `enddate` datetime DEFAULT NULL,
+  `assignee_objid` varchar(50) DEFAULT NULL,
+  `assignee_name` varchar(100) DEFAULT NULL,
+  `assignee_title` varchar(80) DEFAULT NULL,
+  `actor_objid` varchar(50) DEFAULT NULL,
+  `actor_name` varchar(100) DEFAULT NULL,
+  `actor_title` varchar(80) DEFAULT NULL,
+  `message` varchar(255) DEFAULT NULL,
+  `signature` longtext,
+  `returnedby` varchar(100) DEFAULT NULL,
+  `dtcreated` datetime DEFAULT NULL,
+  `prevtaskid` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`taskid`),
+  KEY `ix_assignee_objid` (`assignee_objid`),
+  KEY `ix_refid` (`refid`),
+  CONSTRAINT `fk_certification_task_certification` FOREIGN KEY (`refid`) REFERENCES `certification` (`objid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+;
+
+
+
+insert into sys_role (name, title, system)
+values('CERTIFICATION_VERIFIER', 'CERTIFICATION VERIFIER', 1)
+;
+
+insert into sys_role (name, title, system)
+values('CERTIFICATION_APPROVER', 'CERTIFICATION APPROVER', 1)
+;
+
+insert into sys_role (name, title, system)
+values('CERTIFICATION_RELEASER', 'CERTIFICATION RELEASER', 1)
+;
+
+
+delete from sys_wf_transition where processname ='certification';
+delete from sys_wf_node where processname ='certification';
+delete from sys_wf where name ='certification';
+
+INSERT INTO `sys_wf` (`name`, `title`, `domain`) VALUES ('certification', 'Certification', 'COMIS');
+
+INSERT INTO `sys_wf_node` (`name`, `processname`, `title`, `nodetype`, `idx`, `salience`, `domain`, `role`, `ui`, `properties`, `tracktime`) VALUES ('start', 'certification', 'Start', 'start', '1', NULL, NULL, NULL, '[type:\"start\",fillColor:\"#00ff00\",pos:[81,110],size:[32,32]]', '[:]', NULL);
+INSERT INTO `sys_wf_node` (`name`, `processname`, `title`, `nodetype`, `idx`, `salience`, `domain`, `role`, `ui`, `properties`, `tracktime`) VALUES ('verification', 'certification', 'Verification', 'state', '2', NULL, 'COMIS', 'CERTIFICATION_VERIFIER', '[type:\"state\",fillColor:\"#c0c0c0\",pos:[200,112],size:[100,43]]', '[:]', '1');
+INSERT INTO `sys_wf_node` (`name`, `processname`, `title`, `nodetype`, `idx`, `salience`, `domain`, `role`, `ui`, `properties`, `tracktime`) VALUES ('approval', 'certification', 'For Approval', 'state', '3', NULL, 'COMIS', 'CERTIFICATION_APPROVER', '[type:\"state\",fillColor:\"#c0c0c0\",pos:[372,108],size:[124,45]]', '[:]', '1');
+INSERT INTO `sys_wf_node` (`name`, `processname`, `title`, `nodetype`, `idx`, `salience`, `domain`, `role`, `ui`, `properties`, `tracktime`) VALUES ('for-release', 'certification', 'For Release', 'state', '4', NULL, 'COMIS', 'CERTIFICATION_RELEASER', '[type:\"state\",fillColor:\"#c0c0c0\",pos:[563,111],size:[147,49]]', '[:]', '1');
+INSERT INTO `sys_wf_node` (`name`, `processname`, `title`, `nodetype`, `idx`, `salience`, `domain`, `role`, `ui`, `properties`, `tracktime`) VALUES ('end', 'certification', 'Released', 'end', '5', NULL, NULL, NULL, '[type:\"end\",fillColor:\"#ff0000\",pos:[790,114],size:[32,32]]', '[:]', NULL);
+
+INSERT INTO `sys_wf_transition` (`parentid`, `processname`, `action`, `to`, `idx`, `eval`, `properties`, `permission`, `caption`, `ui`) VALUES ('start', 'certification', 'init', 'verification', '1', NULL, '[:]', NULL, 'Init', '[points:[113,126,200,130],type:\"arrow\",pos:[113,126],size:[87,4]]');
+INSERT INTO `sys_wf_transition` (`parentid`, `processname`, `action`, `to`, `idx`, `eval`, `properties`, `permission`, `caption`, `ui`) VALUES ('verification', 'certification', 'submit', 'approval', '2', NULL, '[showConfirm:true,confirmMessage:\"Submit for approval?\"]', NULL, 'Submit', '[points:[300,131,372,130],type:\"arrow\",pos:[300,130],size:[72,1]]');
+INSERT INTO `sys_wf_transition` (`parentid`, `processname`, `action`, `to`, `idx`, `eval`, `properties`, `permission`, `caption`, `ui`) VALUES ('approval', 'certification', 'approve', 'for-release', '3', NULL, '[showConfirm:true,confirmMessage:\"Approve certification?\"]', NULL, 'Approve', '[points:[496,131,563,133],type:\"arrow\",pos:[496,131],size:[67,2]]');
+INSERT INTO `sys_wf_transition` (`parentid`, `processname`, `action`, `to`, `idx`, `eval`, `properties`, `permission`, `caption`, `ui`) VALUES ('for-release', 'certification', 'release', 'end', '4', NULL, '[showConfirm:true,confirmMessage:\"Release certification?\"]', NULL, 'Release', '[points:[710,133,790,131],type:\"arrow\",pos:[710,131],size:[80,2]]');
+
+drop view if exists vw_certification 
+;
+
+create view vw_certification 
+as 
+select 
+	c.*, 
+	t.taskid as task_objid,
+	t.state as task_state,
+	t.enddate as task_enddate,
+	t.assignee_objid as task_assignee_objid,
+	t.actor_objid as task_actor_objid,
+	t.prevtaskid as task_prevtaskid
+from certification c 
+inner join certification_task t on c.taskid = t.taskid
+;
+
+
+CREATE TABLE `civilstatus` (
+  `objid` varchar(50) NOT NULL,
+  PRIMARY KEY (`objid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+;
+
+INSERT INTO `civilstatus` (`objid`) VALUES ('SINGLE');
+INSERT INTO `civilstatus` (`objid`) VALUES ('MARRIED');
+INSERT INTO `civilstatus` (`objid`) VALUES ('WIDOWED');
+INSERT INTO `civilstatus` (`objid`) VALUES ('DIVORCED');
+INSERT INTO `civilstatus` (`objid`) VALUES ('ANNULLED');
+
+
+alter table deceased add civilstatus varchar(50);
+
+alter table deceased add dtregistered date;
+
+alter table certification add deceased_name varchar(255)
+;
+
+create index ix_deceased_name on certification(deceased_name)
+;
+
+
+alter table deceased 
+	add constraint fk_deceased_civilstatus foreign key(civilstatus)
+	references civilstatus(objid)
+;
 

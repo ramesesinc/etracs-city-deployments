@@ -26,6 +26,9 @@ class ComisDeceasedPersonService {
     @DataContext('application')
     def em_app;
 
+    @DataContext('civilstatus')
+    def em_civilstatus;
+
 
     @ProxyMethod
     public def getNationalities() {
@@ -100,6 +103,11 @@ class ComisDeceasedPersonService {
             info: info
         ])
         return info
+    }
+
+    @ProxyMethod
+    public def getCivilStatusList() {
+        return em_civilstatus.where('1=1').list().objid;
     }
 
 }

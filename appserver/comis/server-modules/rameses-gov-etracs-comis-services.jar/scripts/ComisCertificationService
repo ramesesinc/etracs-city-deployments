@@ -1,0 +1,47 @@
+import com.rameses.annotations.*;
+
+
+public class ComisCertificationService  {
+    @Env
+    def env
+
+	@Service('WorkflowTaskService')
+	def wfSvc;
+
+	@Service('DateService')
+	def dtSvc;
+
+    @Service('SequenceService')
+    def seqSvc;
+
+    @DataContext('certification')
+    def em_certification;
+
+	@ProxyMethod
+	public def create(entity) {
+        entity.state = 'DRAFT';
+        entity.txnno = getNextSeries(true);
+        entity.txndate = dtSvc.serverDate;
+        entity = em_certification.create(entity)
+        startWorkflow(entity)
+        return entity;
+	}
+
+    void startWorkflow(entity) {
+        def task = [:];
+        task.processname = 'certification';
+        task.refid = entity.objid;
+        task.startdate = dtSvc.getServerDate();
+        task.info = entity;
+        task.assignee = [objid:env.USERID, name:env.FULLNAME];		
+        wfSvc.start(task);			
+    }
+
+    def getNextSeries(isTemp) {
+        def cy = dtSvc.serverYear;
+        def keyid = 'CERTIFICATION' + (isTemp ? '-TEMP-' : '-') + cy;
+        def series = seqSvc.getNextFormattedSeries(keyid);
+        return (isTemp ? 'T' : '') + cy + '' + series;
+    }
+
+}

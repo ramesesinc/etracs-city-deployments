@@ -11,6 +11,7 @@
         <field name="agetype" />
         <field name="ageinmon" type="integer" />
         <field name="sex" caption="Sex" />
+        <field name="civilstatus" caption="Civil Status" />
         <field name="dtdied" caption="Date of Death" type="date" />
         <field name="placeofdeath_objid" caption="Place of Death" />
         <field name="placeofburial_objid" caption="Place of Burial" />
@@ -21,6 +22,7 @@
         <field name="infectious" />
         <field name="embalmed" />
         <field name="disposition" />
+        <field name="dtregistered" type="date" />
         <field name="registryno" type="integer" />
         <field name="pageno" type="integer" />
         <field name="bookno" type="integer" />

@@ -1,0 +1,26 @@
+<schema>
+    <element tablename="certification">
+        <field name="objid" primary="true" prefix="C" />
+        <field name="state" caption="State" searchable="true" />
+        <field name="txnno" caption="Certification No." searchable="true" />
+        <field name="txndate" caption="Certification Date" />
+        <field name="deceased_name" caption="Deceased" searchable="true" />
+        <field name="requestedby_name" caption="Requested By" searchable="true" />
+        <field name="requestedby_address" caption="Address" />
+        <field name="purpose" caption="Purpose" />
+        <field name="refid" />
+        <field name="reftype" />
+        <field name="receipt_objid" />
+        <field name="receipt_no" caption="Receipt No." searchable="true" />
+        <field name="receipt_date" caption="Receipt Date" />
+        <field name="receipt_amount" caption="Amount" type="decimal" />
+        <field name="report_id"  caption="Certification Type" />
+        <field name="report_name" />
+        <field name="taskid" />
+        <complex name="task" ref="certification_task" required="false"
+            includefields="objid,state,enddate,assignee.*,actor.*,prevtaskid"
+        >
+            <key field="taskid" target="objid" />
+        </complex>
+    </element>
+</schema>

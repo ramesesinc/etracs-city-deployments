@@ -1,0 +1,5 @@
+<schema>
+    <element tablename="civilstatus">
+        <field name="objid" primary="true" prefix="CS" />
+    </element>
+</schema>
