@@ -27,6 +27,13 @@ public class ComisCertificationService  {
         return entity;
 	}
 
+    @ProxyMethod
+    public def approve(entity) {
+        entity.state = 'APPROVED';
+        em_certification.find([objid: entity.objid]).update([state: entity.state])
+        return entity;
+    }
+
     void startWorkflow(entity) {
         def task = [:];
         task.processname = 'certification';
