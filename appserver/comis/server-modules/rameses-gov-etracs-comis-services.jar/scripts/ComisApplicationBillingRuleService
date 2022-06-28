@@ -72,11 +72,10 @@ public class ComisApplicationBillingRuleService  {
 		request.facts << new CemeteryResource(vwresource);
 		request.facts << new Cemetery(vwresource.cemetery);
 		request.facts << new BurialPermitApplication(app);
+
+	  def prevapp = app.prevappid ? em_app.read([objid: app.prevappid]) : em_app.read([objid: app.objid])
 		
-		if (app.prevappid) {
-			def prevapp  = em_app.read([objid: app.prevappid]);
-			request.facts << new PrevBurialPermitApplication(prevapp);
-		}
+		request.facts << new PrevBurialPermitApplication(prevapp);
 
 		app.fees.each{fee ->
 			request.facts << new Fee(fee);
