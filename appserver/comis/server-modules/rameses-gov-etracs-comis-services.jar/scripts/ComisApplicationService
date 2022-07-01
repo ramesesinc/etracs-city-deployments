@@ -185,6 +185,7 @@ class ComisApplicationService {
         payment.txndate = dtSvc.serverDate;
         payment = em_payment.create(payment);
         em_app.find([objid: payment.appid]).update([amtpaid: payment.amount]);
+        em_fee.find([parentid: payment.appid]).update([amtpaid: payment.amount]);
         return payment;
     }
 
