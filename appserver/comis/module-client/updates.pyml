@@ -5,7 +5,7 @@ app:
 
    modules:
       # comis
-      - { order: 401, version: 1.04, file: "modules/comis/rameses-gov-etracs-comis.jar" }
+      - { order: 401, version: 1.05, file: "modules/comis/rameses-gov-etracs-comis.jar" }
       - { order: 402, version: 1.03, file: "modules/comis/rameses-gov-etracs-comis-shared.jar" }
       - { order: 403, version: 1.04, file: "modules/comis/rameses-gov-etracs-comis-reports.jar" }
       - { order: 404, version: 1.03, file: "modules/comis/rameses-gov-etracs-comis-collection.jar" }
