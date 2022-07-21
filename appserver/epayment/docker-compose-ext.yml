@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+
+   epayment-server:
+      volumes:
+         ## mounted patch folders
+         - ./server:/enterprise/modules
+
+         - ./lib/rameses-common2.jar:/apps/server/lib/rameses-common2.jar
