@@ -52,6 +52,9 @@ class RPTReceiptService
 	@DataContext('rptpayment_share')
 	def em_rptpayment_share
 
+	@DataContext('rptbill')
+	def em_rptbill
+
 	@DataContext('rptbill_ledger')
 	def em_rptbill_ledger
 
@@ -109,12 +112,16 @@ class RPTReceiptService
 
 
 	@ProxyMethod
-	public def loadBarcode(barcode){
-		if (!barcode.barcodeid) {
+	public def loadBarcode(param){
+		if (param.billid) {
+			def bill = em_rptbill.select('barcode').find([objid: param.billid]).first()
+			if (bill) param.barcodeid = bill.barcode
+		}
+		if (!param.barcodeid) {
 			throw new Exception('barcodeid must be specified.')
 		}
-		
-		def bill = billSvc.getBillByBarcode(barcode)
+
+		def bill = billSvc.getBillByBarcode(param)
 
 		def entity = [:]
 		entity.formtype = 'serial'

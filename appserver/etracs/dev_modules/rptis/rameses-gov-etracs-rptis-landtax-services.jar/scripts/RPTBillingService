@@ -27,6 +27,9 @@ public class RPTBillingService
 	@DataContext('rptledger_item')
 	def em_rptledger_item
 
+	@DataContext('paymentorder_type')
+	def em_paymentorder_type
+
 	@DataContext('collectiontype')
 	def em_collectiontype
 
@@ -61,6 +64,8 @@ public class RPTBillingService
 	def FACT_PACKAGE 		= 'rptbilling.'
 	def MAX_ADVANCE_YEARS 	= 3 
 	def BARCODE_KEY 		= '56001'
+
+    def PAYMENTORDER_TYPE = 'RPT'
 
 	
 	@ProxyMethod
@@ -115,13 +120,9 @@ public class RPTBillingService
 			throw new Exception('Bill has already expired.')
 		}
 
-		bill.collectiontype = em_collectiontype.find([formno:'56', barcodekey:BARCODE_KEY]).first()
-		if (!bill.collectiontype){
-			bill.collectiontype = em_collectiontype.find([formno:'56CON', barcodekey:BARCODE_KEY]).first()
-		}
-		if (!bill.collectiontype){
-			bill.collectiontype = em_collectiontype.find([formno:'5156', barcodekey:BARCODE_KEY]).first()
-		}
+        def potype = em_paymentorder_type.find([objid: PAYMENTORDER_TYPE]).first()
+        bill.collectiontype = em_collectiontype.find([objid: potype?.collectiontype?.objid]).first()
+
 		if (!bill.collectiontype) {
 			throw new Exception('Collection Type is not defined for barcode key ' + BARCODE_KEY + '.')
 		}

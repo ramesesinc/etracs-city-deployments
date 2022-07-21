@@ -123,4 +123,5 @@ from rpttaxclearance t
 inner join rptcertification c on t.objid = c.objid 
 inner join rptcertificationitem i on c.objid = i.rptcertificationid
 where i.refid = $P{objid}
+order by c.txndate desc 
 

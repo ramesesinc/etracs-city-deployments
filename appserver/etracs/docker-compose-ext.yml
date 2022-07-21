@@ -1,14 +1,16 @@
 version: "3"
 
 services:
-   etracs-server:
-      volumes:
-         - ./dev_modules/admin:/services/modules/admin
-         - ./dev_modules/jasper:/services/modules/jasper
-         - ./dev_modules/treasury:/services/modules/treasury
-         - ./dev_modules/bpls:/services/modules/bpls
+  etracs-server:
+    volumes:
+      - ./dev_modules/admin:/services/modules/admin
+      - ./dev_modules/jasper:/services/modules/jasper
+      - ./dev_modules/treasury:/services/modules/treasury
+      - ./dev_modules/bpls:/services/modules/bpls
 
-         - ./dev_modules/rptis/rameses-gov-etracs-rptis-services.jar:/services/modules/rptis/rameses-gov-etracs-rptis-services.jar
-         - ./dev_modules/rptis/rameses-gov-etracs-rptis-landtax-report-services.jar:/services/modules/rptis/rameses-gov-etracs-rptis-landtax-report-services.jar
-         - ./dev_modules/rptis/rameses-gov-etracs-rptis-landtax-services.jar:/services/modules/rptis/rameses-gov-etracs-rptis-landtax-services.jar
-         - ./dev_modules/rptis/rameses-gov-etracs-rptis-report-services.jar:/services/modules/rptis/rameses-gov-etracs-rptis-report-services.jar
+      - ./dev_modules/rptis/rameses-gov-etracs-rptis-city-services.jar:/services/modules/rptis/rameses-gov-etracs-rptis-city-services.jar
+      - ./dev_modules/rptis/rameses-gov-etracs-rptis-landtax-report-services.jar:/services/modules/rptis/rameses-gov-etracs-rptis-landtax-report-services.jar
+      - ./dev_modules/rptis/rameses-gov-etracs-rptis-landtax-services.jar:/services/modules/rptis/rameses-gov-etracs-rptis-landtax-services.jar
+      - ./dev_modules/rptis/rameses-gov-etracs-rptis-services.jar:/services/modules/rptis/rameses-gov-etracs-rptis-services.jar
+      - ./dev_modules/rptis/rameses-gov-etracs-rptis-report-services.jar:/services/modules/rptis/rameses-gov-etracs-rptis-report-services.jar
+      - ./dev_modules/rptis/rameses-gov-etracs-rptis-sms-services.jar:/services/modules/rptis/rameses-gov-etracs-rptis-sms-services.jar

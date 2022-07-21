@@ -64,6 +64,7 @@ class LandTaxReportDelinquencyService
 		} 
 
 		params.classificationid = (params.classification ? params.classification.objid : '%')
+		params.taxpayerid = params.taxpayer ? params.taxpayer.objid : '%' 
 
 		params.barangayid = params.barangay?.objid; 
 		if ( !params.barangayid ) params.barangayid='%'; 
@@ -180,6 +181,9 @@ class LandTaxReportDelinquencyService
 				throw new Exception('Realty tax delinquency build has not completed.\nOpen the realty tax delinquency build facility and complete the process.')
 			}
 		}
+
+		if (params.period.code == 'YEAR_RANGE' && params.fromyear > params.toyear)
+		throw new Exception("From Year must be less than or equal to To Year")
 	}
 }
 
