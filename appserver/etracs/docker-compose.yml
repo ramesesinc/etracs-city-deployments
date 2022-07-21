@@ -3,7 +3,7 @@ version: "3"
 services:
   etracs-server:
     container_name: etracs-server
-    image: ramesesinc/etracs-server-city:2.5.04.03.01
+    image: ramesesinc/etracs-server-city:2.5.04.05.01
     restart: always
     logging:
       driver: "json-file"
@@ -29,3 +29,8 @@ services:
 
       - ../../_custom/output:/apps/server/output
       - ../../_custom/fileserver:/fileserver
+
+      - ./client/reports:/apps/server/templates
+      - ../../_custom/module-client/etracs:/apps/server/templates/custom
+
+      - ../../_custom/report-files/enterprise:/report-files

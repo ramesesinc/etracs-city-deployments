@@ -1,0 +1,33 @@
+import com.rameses.annotations.*;
+
+class PaymentOrderPersistenceInterceptor {
+
+	@Service("PaymentOrderService")
+	def poSvc;
+
+	@Before(pattern="PersistenceService.create", eval="#{args[0]._schemaname == 'paymentorder'}")
+	public void beforeCreate( evt ) { 
+		def r = evt.args[0];
+		poSvc.initData( r );
+	} 
+
+	@After(pattern="PersistenceService.create", eval="#{args[0]._schemaname == 'paymentorder'}")
+	public void afterCreate( evt ) { 
+		def a = evt.args[0];
+		def result = evt.result;
+		resolveData( a, result );
+	}	
+
+	@After(pattern="PersistenceService.read", eval="#{args[0]._schemaname == 'paymentorder'}")
+	public void afterRead( evt ) {
+		def a = evt.args[0];
+		def result = evt.result;
+		resolveData( a, result );
+	}
+
+	void resolveData( req, res ) {
+		def bc = poSvc.getBarcodePrefix( req?._connection ); 
+		res.txncode = bc?.barcodeid +":"+ res.objid; 
+		res.checksum = poSvc.buildCheckSum( res.objid ); 
+	}
+}

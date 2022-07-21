@@ -80,11 +80,12 @@ class BPDelinquencyTask {
 				billdate = ( bill.billdate ? bill.billdate : billdate ); 
 				expirydate = ( bill.expirydate ? bill.expirydate : expirydate );
 
+				em_report_item.find([ applicationid: ledger.applicationid ]).delete(); 
+				
 				bill.items.each{ bi-> 
 					bi.parentid = o.objid; 
 					bi.objid = new java.rmi.server.UID().toString(); 
 
-					em_report_item.find([ applicationid: bi.applicationid ]).delete(); 
 					em_report_item.create( bi ); 
 				}  
 			} 
