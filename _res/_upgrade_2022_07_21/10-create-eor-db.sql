@@ -1,16 +1,13 @@
-DROP DATABASE eor
-GO 
-
 CREATE DATABASE [eor]
 GO
 
 USE [eor]
-GO 
+GO
 
 -- ----------------------------
 -- Table structure for eor
 -- ----------------------------
-CREATE TABLE [eor] (
+CREATE TABLE [dbo].[eor] (
 [objid] varchar(50) NOT NULL ,
 [receiptno] varchar(50) NULL ,
 [receiptdate] date NULL ,
@@ -38,7 +35,7 @@ GO
 -- ----------------------------
 -- Table structure for eor_for_email
 -- ----------------------------
-CREATE TABLE [eor_for_email] (
+CREATE TABLE [dbo].[eor_for_email] (
 [objid] varchar(50) NOT NULL ,
 [txndate] datetime NULL ,
 [email] varchar(255) NULL ,
@@ -54,7 +51,7 @@ GO
 -- ----------------------------
 -- Table structure for eor_item
 -- ----------------------------
-CREATE TABLE [eor_item] (
+CREATE TABLE [dbo].[eor_item] (
 [objid] varchar(50) NOT NULL ,
 [parentid] varchar(50) NULL ,
 [item_objid] varchar(50) NULL ,
@@ -71,7 +68,7 @@ GO
 -- ----------------------------
 -- Table structure for eor_manual_post
 -- ----------------------------
-CREATE TABLE [eor_manual_post] (
+CREATE TABLE [dbo].[eor_manual_post] (
 [objid] varchar(50) NOT NULL ,
 [state] varchar(10) NULL ,
 [paymentorderno] varchar(50) NULL ,
@@ -92,7 +89,7 @@ GO
 -- ----------------------------
 -- Table structure for eor_number
 -- ----------------------------
-CREATE TABLE [eor_number] (
+CREATE TABLE [dbo].[eor_number] (
 [objid] varchar(255) NOT NULL ,
 [currentno] int NOT NULL 
 )
@@ -103,7 +100,7 @@ GO
 -- ----------------------------
 -- Table structure for eor_payment_error
 -- ----------------------------
-CREATE TABLE [eor_payment_error] (
+CREATE TABLE [dbo].[eor_payment_error] (
 [objid] varchar(50) NOT NULL ,
 [txndate] datetime NOT NULL ,
 [paymentrefid] varchar(50) NOT NULL ,
@@ -119,7 +116,7 @@ GO
 -- ----------------------------
 -- Table structure for eor_paymentorder
 -- ----------------------------
-CREATE TABLE [eor_paymentorder] (
+CREATE TABLE [dbo].[eor_paymentorder] (
 [objid] varchar(50) NOT NULL ,
 [txndate] datetime NULL ,
 [txntype] varchar(50) NULL ,
@@ -150,7 +147,7 @@ GO
 -- ----------------------------
 -- Table structure for eor_paymentorder_cancelled
 -- ----------------------------
-CREATE TABLE [eor_paymentorder_cancelled] (
+CREATE TABLE [dbo].[eor_paymentorder_cancelled] (
 [objid] varchar(50) NOT NULL ,
 [txndate] datetime NULL ,
 [txntype] varchar(50) NULL ,
@@ -180,7 +177,7 @@ GO
 -- ----------------------------
 -- Table structure for eor_paymentorder_paid
 -- ----------------------------
-CREATE TABLE [eor_paymentorder_paid] (
+CREATE TABLE [dbo].[eor_paymentorder_paid] (
 [objid] varchar(50) NOT NULL ,
 [txndate] datetime NULL ,
 [txntype] varchar(50) NULL ,
@@ -210,7 +207,7 @@ GO
 -- ----------------------------
 -- Table structure for eor_remittance
 -- ----------------------------
-CREATE TABLE [eor_remittance] (
+CREATE TABLE [dbo].[eor_remittance] (
 [objid] varchar(50) NOT NULL ,
 [state] varchar(50) NULL ,
 [controlno] varchar(50) NULL ,
@@ -232,7 +229,7 @@ GO
 -- ----------------------------
 -- Table structure for eor_remittance_fund
 -- ----------------------------
-CREATE TABLE [eor_remittance_fund] (
+CREATE TABLE [dbo].[eor_remittance_fund] (
 [objid] varchar(100) NOT NULL ,
 [remittanceid] varchar(50) NULL ,
 [fund_objid] varchar(50) NULL ,
@@ -252,7 +249,7 @@ GO
 -- ----------------------------
 -- Table structure for eor_share
 -- ----------------------------
-CREATE TABLE [eor_share] (
+CREATE TABLE [dbo].[eor_share] (
 [objid] varchar(50) NOT NULL ,
 [parentid] varchar(50) NOT NULL ,
 [refitem_objid] varchar(50) NULL ,
@@ -272,7 +269,7 @@ GO
 -- ----------------------------
 -- Table structure for epayment_plugin
 -- ----------------------------
-CREATE TABLE [epayment_plugin] (
+CREATE TABLE [dbo].[epayment_plugin] (
 [objid] varchar(50) NOT NULL ,
 [connection] varchar(50) NULL ,
 [servicename] varchar(255) NULL 
@@ -284,7 +281,7 @@ GO
 -- ----------------------------
 -- Table structure for jev
 -- ----------------------------
-CREATE TABLE [jev] (
+CREATE TABLE [dbo].[jev] (
 [objid] varchar(150) NOT NULL ,
 [jevno] varchar(50) NULL ,
 [jevdate] date NULL ,
@@ -311,7 +308,7 @@ GO
 -- ----------------------------
 -- Table structure for jevitem
 -- ----------------------------
-CREATE TABLE [jevitem] (
+CREATE TABLE [dbo].[jevitem] (
 [objid] varchar(150) NOT NULL ,
 [jevid] varchar(150) NULL ,
 [accttype] varchar(50) NULL ,
@@ -330,7 +327,7 @@ GO
 -- ----------------------------
 -- Table structure for paymentpartner
 -- ----------------------------
-CREATE TABLE [paymentpartner] (
+CREATE TABLE [dbo].[paymentpartner] (
 [objid] varchar(50) NOT NULL ,
 [code] varchar(50) NULL ,
 [name] varchar(100) NULL ,
@@ -348,7 +345,7 @@ GO
 -- ----------------------------
 -- Table structure for sys_email_queue
 -- ----------------------------
-CREATE TABLE [sys_email_queue] (
+CREATE TABLE [dbo].[sys_email_queue] (
 [objid] varchar(50) NOT NULL ,
 [refid] varchar(50) NOT NULL ,
 [state] int NOT NULL ,
@@ -367,7 +364,7 @@ GO
 -- ----------------------------
 -- Table structure for sys_email_template
 -- ----------------------------
-CREATE TABLE [sys_email_template] (
+CREATE TABLE [dbo].[sys_email_template] (
 [objid] varchar(50) NOT NULL ,
 [subject] varchar(255) NOT NULL ,
 [message] varchar(MAX) NOT NULL 
@@ -379,7 +376,7 @@ GO
 -- ----------------------------
 -- Table structure for unpostedpayment
 -- ----------------------------
-CREATE TABLE [unpostedpayment] (
+CREATE TABLE [dbo].[unpostedpayment] (
 [objid] varchar(50) NOT NULL ,
 [txndate] datetime NOT NULL ,
 [txntype] varchar(50) NOT NULL ,
@@ -403,170 +400,170 @@ GO
 -- ----------------------------
 -- View structure for vw_remittance_eor_item
 -- ----------------------------
-CREATE VIEW [vw_remittance_eor_item] AS 
+CREATE VIEW [dbo].[vw_remittance_eor_item] AS 
 select 
-	c.remittanceid AS remittanceid,
-	r.controldate AS remittance_controldate,
-	r.controlno AS remittance_controlno,
-	cri.parentid AS receiptid,
-	c.receiptdate AS receiptdate,
-	c.receiptno AS receiptno,
-	c.paidby AS paidby,
-	c.paidbyaddress AS paidbyaddress,
-	cri.item_fund_objid AS fundid,
-	cri.item_objid AS acctid,
-	cri.item_code AS acctcode,
-	cri.item_title AS acctname,
-	cri.remarks AS remarks,
-	cri.amount AS amount,
+  c.remittanceid AS remittanceid,
+  r.controldate AS remittance_controldate,
+  r.controlno AS remittance_controlno,
+  cri.parentid AS receiptid,
+  c.receiptdate AS receiptdate,
+  c.receiptno AS receiptno,
+  c.paidby AS paidby,
+  c.paidbyaddress AS paidbyaddress,
+  cri.item_fund_objid AS fundid,
+  cri.item_objid AS acctid,
+  cri.item_code AS acctcode,
+  cri.item_title AS acctname,
+  cri.remarks AS remarks,
+  cri.amount AS amount,
   c.txntype
 from eor_remittance r 
-	inner join eor c on c.remittanceid = r.objid 
-	inner join eor_item cri on cri.parentid = c.objid
+  inner join eor c on c.remittanceid = r.objid 
+  inner join eor_item cri on cri.parentid = c.objid
 GO
 
 -- ----------------------------
 -- View structure for vw_remittance_eor_share
 -- ----------------------------
-CREATE VIEW [vw_remittance_eor_share] AS 
+CREATE VIEW [dbo].[vw_remittance_eor_share] AS 
 select 
-	c.remittanceid AS remittanceid,
-	r.controldate AS remittance_controldate,
-	r.controlno AS remittance_controlno,
-	cri.parentid AS receiptid,
-	c.receiptdate AS receiptdate,
-	c.receiptno AS receiptno,
-	c.paidby AS paidby,
-	c.paidbyaddress AS paidbyaddress,
-	cri.refitem_objid AS refacctid,
-	cri.refitem_code AS refacctcode,
-	cri.refitem_title AS refaccttitle,
-	cri.payableitem_objid AS acctid,
-	cri.payableitem_code AS acctcode,
-	cri.payableitem_title AS acctname,
-	cri.share AS amount,
+  c.remittanceid AS remittanceid,
+  r.controldate AS remittance_controldate,
+  r.controlno AS remittance_controlno,
+  cri.parentid AS receiptid,
+  c.receiptdate AS receiptdate,
+  c.receiptno AS receiptno,
+  c.paidby AS paidby,
+  c.paidbyaddress AS paidbyaddress,
+  cri.refitem_objid AS refacctid,
+  cri.refitem_code AS refacctcode,
+  cri.refitem_title AS refaccttitle,
+  cri.payableitem_objid AS acctid,
+  cri.payableitem_code AS acctcode,
+  cri.payableitem_title AS acctname,
+  cri.share AS amount,
   c.txntype
 from eor_remittance r 
-	inner join eor c on c.remittanceid = r.objid 
-	inner join eor_share cri on cri.parentid = c.objid
+  inner join eor c on c.remittanceid = r.objid 
+  inner join eor_share cri on cri.parentid = c.objid
 GO
 
 -- ----------------------------
 -- Indexes structure for table eor
 -- ----------------------------
-CREATE UNIQUE INDEX [uix_eor_receiptno] ON [eor] 
+CREATE UNIQUE INDEX [uix_eor_receiptno] ON [dbo].[eor]
 ([receiptno] ASC) 
 GO
-CREATE INDEX [ix_receiptdate] ON [eor]
+CREATE INDEX [ix_receiptdate] ON [dbo].[eor]
 ([receiptdate] ASC) 
 GO
-CREATE INDEX [ix_txndate] ON [eor]
+CREATE INDEX [ix_txndate] ON [dbo].[eor]
 ([txndate] ASC) 
 GO
-CREATE INDEX [ix_partnerid] ON [eor]
+CREATE INDEX [ix_partnerid] ON [dbo].[eor]
 ([partnerid] ASC) 
 GO
-CREATE INDEX [ix_traceid] ON [eor]
+CREATE INDEX [ix_traceid] ON [dbo].[eor]
 ([traceid] ASC) 
 GO
-CREATE INDEX [ix_refid] ON [eor]
+CREATE INDEX [ix_refid] ON [dbo].[eor]
 ([refid] ASC) 
 GO
-CREATE INDEX [ix_paidby] ON [eor]
+CREATE INDEX [ix_paidby] ON [dbo].[eor]
 ([paidby] ASC) 
 GO
-CREATE INDEX [ix_payer_objid] ON [eor]
+CREATE INDEX [ix_payer_objid] ON [dbo].[eor]
 ([payer_objid] ASC) 
 GO
-CREATE INDEX [ix_paymentrefid] ON [eor]
+CREATE INDEX [ix_paymentrefid] ON [dbo].[eor]
 ([paymentrefid] ASC) 
 GO
-CREATE INDEX [ix_remittanceid] ON [eor]
+CREATE INDEX [ix_remittanceid] ON [dbo].[eor]
 ([remittanceid] ASC) 
 GO
-CREATE INDEX [ix_lockid] ON [eor]
+CREATE INDEX [ix_lockid] ON [dbo].[eor]
 ([lockid] ASC) 
 GO
 
 -- ----------------------------
 -- Primary Key structure for table eor
 -- ----------------------------
-ALTER TABLE [eor] ADD constraint pk_eor PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[eor] ADD CONSTRAINT pk_eor PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
 -- Indexes structure for table eor_for_email
 -- ----------------------------
-CREATE INDEX [ix_txndate] ON [eor_for_email]
+CREATE INDEX [ix_txndate] ON [dbo].[eor_for_email]
 ([txndate] ASC) 
 GO
-CREATE INDEX [ix_state] ON [eor_for_email]
+CREATE INDEX [ix_state] ON [dbo].[eor_for_email]
 ([state] ASC) 
 GO
-CREATE INDEX [ix_dtsent] ON [eor_for_email]
+CREATE INDEX [ix_dtsent] ON [dbo].[eor_for_email]
 ([dtsent] ASC) 
 GO
 
 -- ----------------------------
 -- Primary Key structure for table eor_for_email
 -- ----------------------------
-ALTER TABLE [eor_for_email] ADD constraint pk_eor_for_email  PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[eor_for_email] ADD CONSTRAINT pk_eor_for_email PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
 -- Indexes structure for table eor_item
 -- ----------------------------
-CREATE INDEX [fk_eoritem_eor] ON [eor_item]
+CREATE INDEX [fk_eoritem_eor] ON [dbo].[eor_item]
 ([parentid] ASC) 
 GO
-CREATE INDEX [ix_item_objid] ON [eor_item]
+CREATE INDEX [ix_item_objid] ON [dbo].[eor_item]
 ([item_objid] ASC) 
 GO
-CREATE INDEX [ix_item_fund_objid] ON [eor_item]
+CREATE INDEX [ix_item_fund_objid] ON [dbo].[eor_item]
 ([item_fund_objid] ASC) 
 GO
 
 -- ----------------------------
 -- Primary Key structure for table eor_item
 -- ----------------------------
-ALTER TABLE [eor_item] ADD constraint pk_eor_item PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[eor_item] ADD CONSTRAINT pk_eor_item PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
 -- Indexes structure for table eor_manual_post
 -- ----------------------------
-CREATE UNIQUE INDEX [uix_paymentorderno] ON [eor_manual_post]
+CREATE UNIQUE INDEX [uix_paymentorderno] ON [dbo].[eor_manual_post]
 ([paymentorderno] ASC) 
 GO
-CREATE INDEX [ix_state] ON [eor_manual_post]
+CREATE INDEX [ix_state] ON [dbo].[eor_manual_post]
 ([state] ASC) 
 GO
-CREATE INDEX [ix_paymentorderno] ON [eor_manual_post]
+CREATE INDEX [ix_paymentorderno] ON [dbo].[eor_manual_post]
 ([paymentorderno] ASC) 
 GO
-CREATE INDEX [ix_paymentpartnerid] ON [eor_manual_post]
+CREATE INDEX [ix_paymentpartnerid] ON [dbo].[eor_manual_post]
 ([paymentpartnerid] ASC) 
 GO
-CREATE INDEX [ix_traceid] ON [eor_manual_post]
+CREATE INDEX [ix_traceid] ON [dbo].[eor_manual_post]
 ([traceid] ASC) 
 GO
-CREATE INDEX [ix_tracedate] ON [eor_manual_post]
+CREATE INDEX [ix_tracedate] ON [dbo].[eor_manual_post]
 ([tracedate] ASC) 
 GO
-CREATE INDEX [ix_dtcreated] ON [eor_manual_post]
+CREATE INDEX [ix_dtcreated] ON [dbo].[eor_manual_post]
 ([dtcreated] ASC) 
 GO
-CREATE INDEX [ix_createdby_objid] ON [eor_manual_post]
+CREATE INDEX [ix_createdby_objid] ON [dbo].[eor_manual_post]
 ([createdby_objid] ASC) 
 GO
-CREATE INDEX [ix_createdby_name] ON [eor_manual_post]
+CREATE INDEX [ix_createdby_name] ON [dbo].[eor_manual_post]
 ([createdby_name] ASC) 
 GO
 
 -- ----------------------------
 -- Primary Key structure for table eor_manual_post
 -- ----------------------------
-ALTER TABLE [eor_manual_post] ADD constraint pk_eor_manual_post PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[eor_manual_post] ADD CONSTRAINT pk_eor_manual_post PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
@@ -576,23 +573,23 @@ GO
 -- ----------------------------
 -- Primary Key structure for table eor_number
 -- ----------------------------
-ALTER TABLE [eor_number] ADD constraint pk_eor_number PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[eor_number] ADD CONSTRAINT pk_eor_number PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
 -- Indexes structure for table eor_payment_error
 -- ----------------------------
-CREATE UNIQUE INDEX [ix_paymentrefid] ON [eor_payment_error]
+CREATE UNIQUE INDEX [ix_paymentrefid] ON [dbo].[eor_payment_error]
 ([paymentrefid] ASC) 
 GO
-CREATE INDEX [ix_txndate] ON [eor_payment_error]
+CREATE INDEX [ix_txndate] ON [dbo].[eor_payment_error]
 ([txndate] ASC) 
 GO
 
 -- ----------------------------
 -- Primary Key structure for table eor_payment_error
 -- ----------------------------
-ALTER TABLE [eor_payment_error] ADD constraint pk_eor_payment_error PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[eor_payment_error] ADD CONSTRAINT pk_eor_payment_error PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
@@ -602,75 +599,75 @@ GO
 -- ----------------------------
 -- Primary Key structure for table eor_paymentorder
 -- ----------------------------
-ALTER TABLE [eor_paymentorder] ADD constraint pk_eor_paymentorder PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[eor_paymentorder] ADD CONSTRAINT pk_eor_paymentorder PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
 -- Indexes structure for table eor_paymentorder_cancelled
 -- ----------------------------
-CREATE INDEX [ix_txndate] ON [eor_paymentorder_cancelled]
+CREATE INDEX [ix_txndate] ON [dbo].[eor_paymentorder_cancelled]
 ([txndate] ASC) 
 GO
-CREATE INDEX [ix_txntype] ON [eor_paymentorder_cancelled]
+CREATE INDEX [ix_txntype] ON [dbo].[eor_paymentorder_cancelled]
 ([txntype] ASC) 
 GO
-CREATE INDEX [ix_payer_objid] ON [eor_paymentorder_cancelled]
+CREATE INDEX [ix_payer_objid] ON [dbo].[eor_paymentorder_cancelled]
 ([payer_objid] ASC) 
 GO
-CREATE INDEX [ix_expirydate] ON [eor_paymentorder_cancelled]
+CREATE INDEX [ix_expirydate] ON [dbo].[eor_paymentorder_cancelled]
 ([expirydate] ASC) 
 GO
-CREATE INDEX [ix_refid] ON [eor_paymentorder_cancelled]
+CREATE INDEX [ix_refid] ON [dbo].[eor_paymentorder_cancelled]
 ([refid] ASC) 
 GO
-CREATE INDEX [ix_refno] ON [eor_paymentorder_cancelled]
+CREATE INDEX [ix_refno] ON [dbo].[eor_paymentorder_cancelled]
 ([refno] ASC) 
 GO
-CREATE INDEX [ix_controlno] ON [eor_paymentorder_cancelled]
+CREATE INDEX [ix_controlno] ON [dbo].[eor_paymentorder_cancelled]
 ([controlno] ASC) 
 GO
-CREATE INDEX [ix_locationid] ON [eor_paymentorder_cancelled]
+CREATE INDEX [ix_locationid] ON [dbo].[eor_paymentorder_cancelled]
 ([locationid] ASC) 
 GO
 
 -- ----------------------------
 -- Primary Key structure for table eor_paymentorder_cancelled
 -- ----------------------------
-ALTER TABLE [eor_paymentorder_cancelled] ADD constraint pk_eor_paymentorder_cancelled PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[eor_paymentorder_cancelled] ADD CONSTRAINT pk_eor_paymentorder_cancelled PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
 -- Indexes structure for table eor_paymentorder_paid
 -- ----------------------------
-CREATE INDEX [ix_txndate] ON [eor_paymentorder_paid]
+CREATE INDEX [ix_txndate] ON [dbo].[eor_paymentorder_paid]
 ([txndate] ASC) 
 GO
-CREATE INDEX [ix_txntype] ON [eor_paymentorder_paid]
+CREATE INDEX [ix_txntype] ON [dbo].[eor_paymentorder_paid]
 ([txntype] ASC) 
 GO
-CREATE INDEX [ix_payer_objid] ON [eor_paymentorder_paid]
+CREATE INDEX [ix_payer_objid] ON [dbo].[eor_paymentorder_paid]
 ([payer_objid] ASC) 
 GO
-CREATE INDEX [ix_expirydate] ON [eor_paymentorder_paid]
+CREATE INDEX [ix_expirydate] ON [dbo].[eor_paymentorder_paid]
 ([expirydate] ASC) 
 GO
-CREATE INDEX [ix_refid] ON [eor_paymentorder_paid]
+CREATE INDEX [ix_refid] ON [dbo].[eor_paymentorder_paid]
 ([refid] ASC) 
 GO
-CREATE INDEX [ix_refno] ON [eor_paymentorder_paid]
+CREATE INDEX [ix_refno] ON [dbo].[eor_paymentorder_paid]
 ([refno] ASC) 
 GO
-CREATE INDEX [ix_controlno] ON [eor_paymentorder_paid]
+CREATE INDEX [ix_controlno] ON [dbo].[eor_paymentorder_paid]
 ([controlno] ASC) 
 GO
-CREATE INDEX [ix_locationid] ON [eor_paymentorder_paid]
+CREATE INDEX [ix_locationid] ON [dbo].[eor_paymentorder_paid]
 ([locationid] ASC) 
 GO
 
 -- ----------------------------
 -- Primary Key structure for table eor_paymentorder_paid
 -- ----------------------------
-ALTER TABLE [eor_paymentorder_paid] ADD constraint pk_eor_paymentorder_paid PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[eor_paymentorder_paid] ADD CONSTRAINT pk_eor_paymentorder_paid PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
@@ -680,20 +677,20 @@ GO
 -- ----------------------------
 -- Primary Key structure for table eor_remittance
 -- ----------------------------
-ALTER TABLE [eor_remittance] ADD constraint pk_eor_remittance PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[eor_remittance] ADD CONSTRAINT pk_eor_remittance PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
 -- Indexes structure for table eor_remittance_fund
 -- ----------------------------
-CREATE INDEX [fk_eor_remittance_fund_remittance] ON [eor_remittance_fund]
+CREATE INDEX [fk_eor_remittance_fund_remittance] ON [dbo].[eor_remittance_fund]
 ([remittanceid] ASC) 
 GO
 
 -- ----------------------------
 -- Primary Key structure for table eor_remittance_fund
 -- ----------------------------
-ALTER TABLE [eor_remittance_fund] ADD constraint pk_eor_remittance_fund PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[eor_remittance_fund] ADD CONSTRAINT pk_eor_remittance_fund PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
@@ -703,7 +700,7 @@ GO
 -- ----------------------------
 -- Primary Key structure for table eor_share
 -- ----------------------------
-ALTER TABLE [eor_share] ADD constraint pk_eor_share PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[eor_share] ADD CONSTRAINT pk_eor_share PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
@@ -713,81 +710,81 @@ GO
 -- ----------------------------
 -- Primary Key structure for table epayment_plugin
 -- ----------------------------
-ALTER TABLE [epayment_plugin] ADD constraint pk_epayment_plugin PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[epayment_plugin] ADD CONSTRAINT pk_epayment_plugin PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
 -- Indexes structure for table jev
 -- ----------------------------
-CREATE INDEX [ix_batchid] ON [jev]
+CREATE INDEX [ix_batchid] ON [dbo].[jev]
 ([batchid] ASC) 
 GO
-CREATE INDEX [ix_dtposted] ON [jev]
+CREATE INDEX [ix_dtposted] ON [dbo].[jev]
 ([dtposted] ASC) 
 GO
-CREATE INDEX [ix_dtverified] ON [jev]
+CREATE INDEX [ix_dtverified] ON [dbo].[jev]
 ([dtverified] ASC) 
 GO
-CREATE INDEX [ix_fundid] ON [jev]
+CREATE INDEX [ix_fundid] ON [dbo].[jev]
 ([fundid] ASC) 
 GO
-CREATE INDEX [ix_jevdate] ON [jev]
+CREATE INDEX [ix_jevdate] ON [dbo].[jev]
 ([jevdate] ASC) 
 GO
-CREATE INDEX [ix_jevno] ON [jev]
+CREATE INDEX [ix_jevno] ON [dbo].[jev]
 ([jevno] ASC) 
 GO
-CREATE INDEX [ix_postedby_objid] ON [jev]
+CREATE INDEX [ix_postedby_objid] ON [dbo].[jev]
 ([postedby_objid] ASC) 
 GO
-CREATE INDEX [ix_refdate] ON [jev]
+CREATE INDEX [ix_refdate] ON [dbo].[jev]
 ([refdate] ASC) 
 GO
-CREATE INDEX [ix_refid] ON [jev]
+CREATE INDEX [ix_refid] ON [dbo].[jev]
 ([refid] ASC) 
 GO
-CREATE INDEX [ix_refno] ON [jev]
+CREATE INDEX [ix_refno] ON [dbo].[jev]
 ([refno] ASC) 
 GO
-CREATE INDEX [ix_reftype] ON [jev]
+CREATE INDEX [ix_reftype] ON [dbo].[jev]
 ([reftype] ASC) 
 GO
-CREATE INDEX [ix_verifiedby_objid] ON [jev]
+CREATE INDEX [ix_verifiedby_objid] ON [dbo].[jev]
 ([verifiedby_objid] ASC) 
 GO
 
 -- ----------------------------
 -- Primary Key structure for table jev
 -- ----------------------------
-ALTER TABLE [jev] ADD constraint pk_jev PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[jev] ADD CONSTRAINT pk_jev PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
 -- Indexes structure for table jevitem
 -- ----------------------------
-CREATE INDEX [ix_jevid] ON [jevitem]
+CREATE INDEX [ix_jevid] ON [dbo].[jevitem]
 ([jevid] ASC) 
 GO
-CREATE INDEX [ix_ledgertype] ON [jevitem]
+CREATE INDEX [ix_ledgertype] ON [dbo].[jevitem]
 ([accttype] ASC) 
 GO
-CREATE INDEX [ix_acctid] ON [jevitem]
+CREATE INDEX [ix_acctid] ON [dbo].[jevitem]
 ([acctid] ASC) 
 GO
-CREATE INDEX [ix_acctcode] ON [jevitem]
+CREATE INDEX [ix_acctcode] ON [dbo].[jevitem]
 ([acctcode] ASC) 
 GO
-CREATE INDEX [ix_acctname] ON [jevitem]
+CREATE INDEX [ix_acctname] ON [dbo].[jevitem]
 ([acctname] ASC) 
 GO
-CREATE INDEX [ix_itemrefid] ON [jevitem]
+CREATE INDEX [ix_itemrefid] ON [dbo].[jevitem]
 ([itemrefid] ASC) 
 GO
 
 -- ----------------------------
 -- Primary Key structure for table jevitem
 -- ----------------------------
-ALTER TABLE [jevitem] ADD constraint pk_jevitem PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[jevitem] ADD CONSTRAINT pk_jevitem PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
@@ -797,29 +794,29 @@ GO
 -- ----------------------------
 -- Primary Key structure for table paymentpartner
 -- ----------------------------
-ALTER TABLE [paymentpartner] ADD constraint pk_paymentpartner PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[paymentpartner] ADD CONSTRAINT pk_paymentpartner PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
 -- Indexes structure for table sys_email_queue
 -- ----------------------------
-CREATE INDEX [ix_refid] ON [sys_email_queue]
+CREATE INDEX [ix_refid] ON [dbo].[sys_email_queue]
 ([refid] ASC) 
 GO
-CREATE INDEX [ix_state] ON [sys_email_queue]
+CREATE INDEX [ix_state] ON [dbo].[sys_email_queue]
 ([state] ASC) 
 GO
-CREATE INDEX [ix_reportid] ON [sys_email_queue]
+CREATE INDEX [ix_reportid] ON [dbo].[sys_email_queue]
 ([reportid] ASC) 
 GO
-CREATE INDEX [ix_dtsent] ON [sys_email_queue]
+CREATE INDEX [ix_dtsent] ON [dbo].[sys_email_queue]
 ([dtsent] ASC) 
 GO
 
 -- ----------------------------
 -- Primary Key structure for table sys_email_queue
 -- ----------------------------
-ALTER TABLE [sys_email_queue] ADD constraint pk_sys_email_queue PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[sys_email_queue] ADD CONSTRAINT pk_sys_email_queue PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
@@ -829,95 +826,152 @@ GO
 -- ----------------------------
 -- Primary Key structure for table sys_email_template
 -- ----------------------------
-ALTER TABLE [sys_email_template] ADD constraint pk_sys_email_template PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[sys_email_template] ADD CONSTRAINT pk_sys_email_template PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
 -- Indexes structure for table unpostedpayment
 -- ----------------------------
-CREATE UNIQUE INDEX [ix_paymentrefid] ON [unpostedpayment]
+CREATE UNIQUE INDEX [ix_paymentrefid] ON [dbo].[unpostedpayment]
 ([paymentrefid] ASC) 
 GO
-CREATE INDEX [ix_txndate] ON [unpostedpayment]
+CREATE INDEX [ix_txndate] ON [dbo].[unpostedpayment]
 ([txndate] ASC) 
 GO
-CREATE INDEX [ix_txntype] ON [unpostedpayment]
+CREATE INDEX [ix_txntype] ON [dbo].[unpostedpayment]
 ([txntype] ASC) 
 GO
-CREATE INDEX [ix_partnerid] ON [unpostedpayment]
+CREATE INDEX [ix_partnerid] ON [dbo].[unpostedpayment]
 ([partnerid] ASC) 
 GO
-CREATE INDEX [ix_traceid] ON [unpostedpayment]
+CREATE INDEX [ix_traceid] ON [dbo].[unpostedpayment]
 ([traceid] ASC) 
 GO
-CREATE INDEX [ix_tracedate] ON [unpostedpayment]
+CREATE INDEX [ix_tracedate] ON [dbo].[unpostedpayment]
 ([tracedate] ASC) 
 GO
-CREATE INDEX [ix_refno] ON [unpostedpayment]
+CREATE INDEX [ix_refno] ON [dbo].[unpostedpayment]
 ([refno] ASC) 
 GO
-CREATE INDEX [ix_origin] ON [unpostedpayment]
+CREATE INDEX [ix_origin] ON [dbo].[unpostedpayment]
 ([origin] ASC) 
 GO
 
 -- ----------------------------
 -- Primary Key structure for table unpostedpayment
 -- ----------------------------
-ALTER TABLE [unpostedpayment] ADD constraint pk_unpostedpayment PRIMARY KEY ([objid])
+ALTER TABLE [dbo].[unpostedpayment] ADD CONSTRAINT pk_unpostedpayment PRIMARY KEY ([objid])
 GO
 
 -- ----------------------------
--- Foreign Key structure for table [eor]
+-- Foreign Key structure for table [dbo].[eor]
 -- ----------------------------
-ALTER TABLE [eor] ADD constraint fk_eor_remittanceid 
-	FOREIGN KEY ([remittanceid]) REFERENCES [eor_remittance] ([objid]) 
+ALTER TABLE [dbo].[eor] ADD CONSTRAINT fk_eor_remittanceid 
+  FOREIGN KEY ([remittanceid]) REFERENCES [dbo].[eor_remittance] ([objid]) 
 GO
 
 -- ----------------------------
--- Foreign Key structure for table [eor_item]
+-- Foreign Key structure for table [dbo].[eor_item]
 -- ----------------------------
-ALTER TABLE [eor_item] ADD constraint fk_eor_item_parentid 
-	FOREIGN KEY ([parentid]) REFERENCES [eor] ([objid]) 
+ALTER TABLE [dbo].[eor_item] ADD CONSTRAINT fk_eor_item_parentid 
+  FOREIGN KEY ([parentid]) REFERENCES [dbo].[eor] ([objid]) 
 GO
 
 -- ----------------------------
--- Foreign Key structure for table [eor_remittance_fund]
+-- Foreign Key structure for table [dbo].[eor_remittance_fund]
 -- ----------------------------
-ALTER TABLE [eor_remittance_fund] ADD constraint fk_eor_remittance_fund_remittanceid 
-	FOREIGN KEY ([remittanceid]) REFERENCES [eor_remittance] ([objid]) 
+ALTER TABLE [dbo].[eor_remittance_fund] ADD CONSTRAINT fk_eor_remittance_fund_remittanceid 
+  FOREIGN KEY ([remittanceid]) REFERENCES [dbo].[eor_remittance] ([objid]) 
 GO
 
 -- ----------------------------
--- Foreign Key structure for table [jevitem]
+-- Foreign Key structure for table [dbo].[jevitem]
 -- ----------------------------
-ALTER TABLE [jevitem] ADD constraint fk_jevitem_jevid 
-	FOREIGN KEY ([jevid]) REFERENCES [jev] ([objid]) 
+ALTER TABLE [dbo].[jevitem] ADD CONSTRAINT fk_jevitem_jevid 
+  FOREIGN KEY ([jevid]) REFERENCES [dbo].[jev] ([objid]) 
 GO
 
 
 
-INSERT INTO [paymentpartner] ([objid], [code], [name], [branch], [contact], [mobileno], [phoneno], [email], [indexno]) 
-VALUES ('DBP', '101', 'DEVELOPMENT BANK OF THE PHILIPPINES', NULL, NULL, NULL, NULL, NULL, '101');
+INSERT INTO [dbo].[epayment_plugin] ([objid], [connection], [servicename]) VALUES ('bpls', 'bpls', 'OnlineBusinessBillingService');
+INSERT INTO [dbo].[epayment_plugin] ([objid], [connection], [servicename]) VALUES ('rptcol', 'rpt', 'OnlineLandTaxBillingService');
+INSERT INTO [dbo].[epayment_plugin] ([objid], [connection], [servicename]) VALUES ('rpttaxclearance', 'landtax', 'OnlineRealtyTaxClearanceService');
 
-INSERT INTO [paymentpartner] ([objid], [code], [name], [branch], [contact], [mobileno], [phoneno], [email], [indexno]) 
-VALUES ('GCASH', '104', 'GCASH', NULL, NULL, NULL, NULL, NULL, '104');
+INSERT INTO [dbo].[paymentpartner] ([objid], [code], [name], [branch], [contact], [mobileno], [phoneno], [email], [indexno]) VALUES ('DBP', '101', 'DEVELOPMENT BANK OF THE PHILIPPINES', NULL, NULL, NULL, NULL, NULL, '101');
+INSERT INTO [dbo].[paymentpartner] ([objid], [code], [name], [branch], [contact], [mobileno], [phoneno], [email], [indexno]) VALUES ('GCASH', '104', 'GCASH', NULL, NULL, NULL, NULL, NULL, '104');
+INSERT INTO [dbo].[paymentpartner] ([objid], [code], [name], [branch], [contact], [mobileno], [phoneno], [email], [indexno]) VALUES ('LBP', '102', 'LAND BANK OF THE PHILIPPINES', NULL, NULL, NULL, NULL, NULL, '102');
+INSERT INTO [dbo].[paymentpartner] ([objid], [code], [name], [branch], [contact], [mobileno], [phoneno], [email], [indexno]) VALUES ('PAYMAYA', '103', 'PAYMAYA', NULL, NULL, NULL, NULL, NULL, '103');
 
-INSERT INTO [paymentpartner] ([objid], [code], [name], [branch], [contact], [mobileno], [phoneno], [email], [indexno]) 
-VALUES ('LBP', '102', 'LAND BANK OF THE PHILIPPINES', NULL, NULL, NULL, NULL, NULL, '102');
-
-INSERT INTO [paymentpartner] ([objid], [code], [name], [branch], [contact], [mobileno], [phoneno], [email], [indexno]) 
-VALUES ('PAYMAYA', '103', 'PAYMAYA', NULL, NULL, NULL, NULL, NULL, '103');
-
-
-INSERT INTO [epayment_plugin] ([objid], [connection], [servicename]) 
-VALUES ('bpls', 'bpls', 'OnlineBusinessBillingService');
-
-INSERT INTO [epayment_plugin] ([objid], [connection], [servicename]) 
-VALUES ('rptcol', 'rpt', 'OnlineLandTaxBillingService');
-
-INSERT INTO [epayment_plugin] ([objid], [connection], [servicename]) 
-VALUES ('rpttaxclearance', 'landtax', 'OnlineRealtyTaxClearanceService');
+INSERT INTO [dbo].[sys_email_template] ([objid], [subject], [message]) VALUES ('eor', 'EOR No ${receiptno}', 'Dear valued customer <br>Please see attached Electronic OR. This is an electronic transaction. Do not reply');
 
 
-INSERT INTO [sys_email_template] ([objid], [subject], [message]) 
-VALUES ('eor', 'EOR No ${receiptno}', 'Dear valued customer <br>Please see attached Electronic OR. This is an electronic transaction. Do not reply');
+
+-- ## 2021-11-23
+
+alter table eor_share add 
+  refitem_fund_objid varchar(100) null, 
+  payableitem_fund_objid varchar(100) null
+go 
+create index ix_refitem_fund_objid on eor_share (refitem_fund_objid)
+go 
+create index ix_payableitem_fund_objid on eor_share (payableitem_fund_objid)
+go 
+
+
+
+if object_id('dbo.vw_remittance_eor_share', 'V') IS NOT NULL 
+  drop view dbo.vw_remittance_eor_share; 
+go 
+CREATE VIEW vw_remittance_eor_share AS 
+select 
+  c.remittanceid AS remittanceid,
+  r.controldate AS remittance_controldate,
+  r.controlno AS remittance_controlno,
+  cri.parentid AS receiptid,
+  c.receiptdate AS receiptdate,
+  c.receiptno AS receiptno,
+  c.paidby AS paidby,
+  c.paidbyaddress AS paidbyaddress,
+  cri.refitem_objid AS refacctid,
+  cri.refitem_code AS refacctcode,
+  cri.refitem_title AS refaccttitle,
+  cri.refitem_fund_objid AS reffundid,
+  cri.payableitem_objid AS acctid,
+  cri.payableitem_code AS acctcode,
+  cri.payableitem_title AS acctname,
+  cri.payableitem_fund_objid AS fundid,
+  cri.amount AS amount,
+  c.txntype  
+from eor_remittance r 
+  inner join eor c on c.remittanceid = r.objid 
+  inner join eor_share cri on cri.parentid = c.objid
+go 
+
+
+
+-- ## 2021-11-24
+
+CREATE TABLE [fund] (
+  [objid] varchar(100) NOT NULL,
+  [state] varchar(10) NULL,
+  [code] varchar(50) NULL,
+  [title] varchar(255) NULL,
+  [type] varchar(20) NULL,
+  [special] int NULL,
+  [system] int NULL,
+  [depositoryfundid] varchar(100) NULL,
+  [group_objid] varchar(50) NULL,
+  [group_title] varchar(255) NULL,
+  [group_indexno] int NULL,
+  constraint pk_fund PRIMARY KEY ([objid]) 
+) 
+go 
+
+create index [ix_code] on [fund] ([code])
+go 
+create index [ix_title] on [fund] ([title])
+go 
+create index [ix_group_objid] on [fund] ([group_objid])
+go 
+create index [ix_depositoryfundid] on [fund] ([depositoryfundid])
+go 
