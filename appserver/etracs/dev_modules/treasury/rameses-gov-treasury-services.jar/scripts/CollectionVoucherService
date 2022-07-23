@@ -40,7 +40,8 @@ class CollectionVoucherService  {
 		def wheres = []; 
 		wheres << "objid IN ('"+ pp.ids.join("','") +"')"; 
 		wheres << "state = 'POSTED' AND collectionvoucherid IS NULL"; 
-
+		wheres << "liquidatingofficer_objid = '"+ env.USERID +"'";
+		
 		// search if there is at least one for posting
 		def cnt = remEm.where( wheres.join(' AND ')).select("x:{COUNT(*)}").val();
 		if ( cnt == 0 ) throw new Exception("There are no remittances found that are POSTED within this date"); 
