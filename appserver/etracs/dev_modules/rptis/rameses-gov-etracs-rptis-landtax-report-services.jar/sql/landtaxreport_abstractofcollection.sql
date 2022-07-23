@@ -775,7 +775,8 @@ from (
 					rl.tdno,
 					rlf.assessedvalue,
 					rl.owner_name,
-					rpi.year 
+					rpi.year,
+					cv.objid
 	) x 
 	group by 
 			x.receiptno,
