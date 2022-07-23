@@ -1,6 +1,6 @@
 <schema>
     <element tablename="rptledger_item">
-        <field name="objid" primary="true" />
+        <field name="objid" primary="true" prefix="RLI" />
         <field name="parentid" required="true"/>
         <field name="rptledgerfaasid" required="true"/>
         <field name="remarks" />
